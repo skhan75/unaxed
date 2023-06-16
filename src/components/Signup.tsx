@@ -2,24 +2,22 @@ import React, { useRef, useState } from "react";
 import Alert  from "./Alert";
 import { useAuth } from "../contexts/AuthContext";
 import { FirebaseError } from "firebase/app";
-// import { Link } from "react-router-dom"
-// import "bootstrap/dist/css/bootstrap.min.css";
+import { useNavigate } from "react-router-dom";
 
 
 export const Signup: React.FC<any> = (props) => {
-    
     const emailRef = useRef<HTMLInputElement>(null);
     const passwordRef = useRef<HTMLInputElement>(null);
     const passwordConfirmationRef = useRef<HTMLInputElement>(null);
     const { signup } = useAuth();
     const [error, setError] = useState<string>('');
     const [loading, setLoading] = useState<boolean>(false);
+    const navigate = useNavigate();
 
-    const handleSignup = async(e: any) => {
+    const handleSubmit = async(e: any) => {
         e.preventDefault();
         setError('');
         setLoading(true)
-        
         try {
             if (emailRef.current && passwordRef.current && passwordConfirmationRef.current) {
                 const email = emailRef.current.value;
@@ -31,6 +29,7 @@ export const Signup: React.FC<any> = (props) => {
                     return;
                 }
                 await signup(email, password);
+                navigate('/create-profile');
             }
         } catch (error: any) {
             setError('Failed to create an account. ' + error.code);
@@ -49,7 +48,7 @@ export const Signup: React.FC<any> = (props) => {
                 <label>Confirm Password</label>
                 <input type="password" ref={passwordConfirmationRef} required />
                 {error && <Alert variant="error" message={error} />}
-                <button disabled={loading} type="button" onClick={handleSignup}>
+                <button disabled={loading} type="button" onClick={handleSubmit}>
                     Sign up
                 </button>
             </form>

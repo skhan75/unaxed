@@ -37,6 +37,7 @@ input[type=email] {
 
 button {
     background-color: #3069be;
+    border-radius: 5px;
     color: white;
     padding: 14px 20px;
     margin: 8px 0;
@@ -51,7 +52,7 @@ button:hover {
 
 .main-container {
     display: flex;
-    height: 100vh;
+    /* height: 100vh; */
     justify-content: center;
 }
 
@@ -71,6 +72,64 @@ button:hover {
         justify-content: center;
         /* width: 400px; */
     }
+}
+
+.new-profile-container {
+    width: 700px;
+    /* border: 1px solid #ccc; */
+    padding: 25px;
+    margin-top: 100px;
+    background-color: var(--secondary-bg);
+    box-shadow: 0 2px 4px 0 rgba(0, 0, 0, .1);
+
+    .new-profile-box {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        /* width: 400px; */
+    }
+
+    .spaced-evenly {
+        display: flex;
+        flex-direction: row;
+        justify-content:space-between;
+
+        .btn-outline {
+            background-color:transparent;
+            border: 1px solid #000000;
+            color: black;
+            width: 100px;
+        }
+        .btn-outline:hover {
+            background-color: #ababab1f;
+        }
+
+        .btn-primary {
+            background-color: #3069be;
+            width: 100px;
+        }
+    }
+
+}
+
+.just-text {
+    font-size: 21px;
+    font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-weight: 500;
+    padding: 10px 0 10px 0;
+}
+
+.forgot-password-link {
+    font-size: 15px;
+    font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-weight: 500; 
+    text-decoration: none;
+    color: #1b63cf;
+}
+
+.forgot-password {
+    padding: 12px 0 12px 0;
 }
 
 .alert {
@@ -96,4 +155,32 @@ button:hover {
 .alert-info {
     background-color: #d9edf7;
     color: #31708f;
+}
+
+.dropdown {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 1rem;
+    width: 100%;
+    margin: 8px 0;
+    box-sizing: border-box;
+}
+
+.dropdown-label {
+    margin-bottom: 0.5rem;
+    font-weight: bold;
+}
+
+.dropdown-select {
+    padding: 12px 20px;
+    border: 1px solid #ccc;
+    background-color: #fff;
+    font-size: 14px;
+    color: #636363da;
+}
+
+.dropdown-select option {
+    padding: 20px;
+    font-size: 14px;
+    color: black;
 }
