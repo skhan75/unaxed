@@ -20,43 +20,31 @@ export const useAuth = () => {
     return authContext;
 };
 
-
-// Create the AuthProvider component
 export const AuthProvider: React.FC<any> = ({ children }) => {
-    { console.log("HERE") }
     const [user, setUser] = useState<User | null>(null);
+    const [loading, setLoading] = useState(true)
 
-    // Firebase login function
+    // Firebase Signup function
     const signup = async (email: string, password: string) => {
-        try {
-            const response = await createUserWithEmailAndPassword(auth, email, password);
-            console.log('User:', response);
-            // setUser(response.user);
-        } catch (error) {
-            console.error('Error logging in:', error);
-            throw error;
-        }
+        const response = await createUserWithEmailAndPassword(auth, email, password);
     };
 
     // Check if the user is already logged in (e.g., on page refresh)
     useEffect(() => {
         const unsubscribe = onAuthStateChanged(auth, (user: React.SetStateAction<User | null>) => {
-            if(user) {
-                console.log("USER", user)
-                setUser(user);
-            }
-            
+            setUser(user);
+            setLoading(false);
         });
 
         return () => {
             unsubscribe();
         };
-    }, []);
+    }, [auth]);
 
     const authContextValue: AuthContextType = {
         user,
         signup,
     };
 
-    return <AuthContext.Provider value={authContextValue}>{children}</AuthContext.Provider>;
+    return <AuthContext.Provider value={authContextValue}>{!loading && children}</AuthContext.Provider>;
 };
