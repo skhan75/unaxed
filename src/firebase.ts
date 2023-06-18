@@ -1,7 +1,7 @@
 import { initializeApp } from 'firebase/app';
 import 'firebase/auth';
+import { getFirestore, collection, addDoc, doc, setDoc } from "firebase/firestore";
 import { getAuth, createUserWithEmailAndPassword, onAuthStateChanged } from "firebase/auth";
-import { get } from 'http';
 
 
 const firebaseConfig = {
@@ -14,17 +14,19 @@ const firebaseConfig = {
   measurementId: process.env.REACT_APP_MEASUREMENT_ID
 }
 
-
-
 const app = initializeApp(firebaseConfig);
 
 export const auth = getAuth(app);
-// export const createUserWithEmailAndPassword = createUserWithEmailAndPassword;
-// export const onAuthStateChanged = onAuthStateChanged;
+export const db = getFirestore(app);
 
-// export const createUser = async(email, password) => {
-//   const userCredential = await auth.createUserWithEmailAndPassword(email, password);
-//   return userCredential;
-// }
+export const addFieldsToCollection = async (collectionName: string, data: any) => {
+  try {
+    console.log("Writin record");
+    const docRef = await addDoc(collection(db, "users"), data);
+    console.log("Document written with ID: ", docRef.id);
+  } catch (e) {
+    console.error("Error adding document: ", e);
+  }
+}
 
 export default app;
