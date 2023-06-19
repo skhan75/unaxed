@@ -20,7 +20,7 @@ const options = [
     { value: 'other', label: 'Other' },
 ];
 
-const NewUserProfile: React.FC<any> = () => {
+const NewUser: React.FC<any> = () => {
     const navigate = useNavigate();
     const { user } = useAuth();
     
@@ -140,4 +140,4 @@ const NewUserProfile: React.FC<any> = () => {
     )
 };
 
-export default NewUserProfile;
+export default NewUser;

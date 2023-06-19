@@ -1,9 +1,8 @@
-import React, { useRef, useState } from "react";
+import React, { useRef, useState, useEffect } from "react";
 import Alert from "./Alert";
 import { useAuth } from "../contexts/AuthContext";
 import { FirebaseError } from "firebase/app";
 import { Link, useNavigate } from "react-router-dom";
-// import { addFieldsToCollection } from "../firebase";
 
 export const Login: React.FC<any> = (props) => {
     const emailRef = useRef<HTMLInputElement>(null);
@@ -12,6 +11,16 @@ export const Login: React.FC<any> = (props) => {
     const [error, setError] = useState<string>('');
     const [loading, setLoading] = useState<boolean>(false);
     const navigate = useNavigate();
+
+    useEffect(() => {
+        const lastLocation = localStorage.getItem('lastLocation');
+        if (lastLocation) {
+            // Clear the stored last location
+            localStorage.removeItem('lastLocation');
+            // Redirect the user to the last visited location
+            navigate(lastLocation);
+        }
+    }, []);
 
     const handleSubmit = async (e: any) => {
         e.preventDefault();

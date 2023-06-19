@@ -1,12 +1,12 @@
 import React from 'react';
-import NewUserProfile from '../components/NewUserProfile';
+import NewUser from '../components/NewUser';
 
 
 const NewProfileInformationPage: React.FC<any> = (props) => {
     return (
         <div className="new-profile-container">
             <div className="new-profile-box">
-                <NewUserProfile />
+                <NewUser />
             </div>
         </div>
     )
