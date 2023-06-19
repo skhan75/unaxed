@@ -1,8 +1,7 @@
 import { initializeApp } from 'firebase/app';
 import 'firebase/auth';
 import { getFirestore, collection, addDoc, doc, setDoc } from "firebase/firestore";
-import { getAuth, createUserWithEmailAndPassword, onAuthStateChanged } from "firebase/auth";
-
+import { getAuth, createUserWithEmailAndPassword, onAuthStateChanged, User } from "firebase/auth";
 
 const firebaseConfig = {
   apiKey: process.env.REACT_APP_API_KEY,
@@ -19,11 +18,12 @@ const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
 export const db = getFirestore(app);
 
-export const addFieldsToCollection = async (collectionName: string, data: any) => {
+export const createDataForNewUser = async (collectionName: string, newUserData: any, user: User|null) => {
   try {
-    console.log("Writin record");
-    const docRef = await addDoc(collection(db, "users"), data);
-    console.log("Document written with ID: ", docRef.id);
+    const usersCollection = collection(db, 'users');
+    const userDocRef = doc(usersCollection, user?.uid);
+    await setDoc(userDocRef, {...newUserData});
+    console.log('Document successfully written!');
   } catch (e) {
     console.error("Error adding document: ", e);
   }

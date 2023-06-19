@@ -3,7 +3,7 @@ import Alert from "./Alert";
 import { useAuth } from "../contexts/AuthContext";
 import { FirebaseError } from "firebase/app";
 import { Link, useNavigate } from "react-router-dom";
-import { addFieldsToCollection } from "../firebase";
+// import { addFieldsToCollection } from "../firebase";
 
 export const Login: React.FC<any> = (props) => {
     const emailRef = useRef<HTMLInputElement>(null);

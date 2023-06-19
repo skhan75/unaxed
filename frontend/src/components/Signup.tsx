@@ -29,6 +29,7 @@ export const Signup: React.FC<any> = (props) => {
                     return;
                 }
                 await signup(email, password);
+
                 navigate('/create-profile');
             }
         } catch (error: any) {

@@ -4,15 +4,18 @@ import {
     createUserWithEmailAndPassword, 
     onAuthStateChanged,
     signInWithEmailAndPassword,
-    sendPasswordResetEmail } from "firebase/auth";
+    sendPasswordResetEmail,
+    signOut,
+ } from "firebase/auth";
 import { User } from "firebase/auth";
 
 // Create the AuthContext
 interface AuthContextType {
     user: User | null;
-    signup: (email: string, password: string) => Promise<void>;
-    login: (email: string, password: string) => Promise<void>;
+    signup: (email: string, password: string) => Promise<User | null>;
+    login: (email: string, password: string) => Promise<User | null>;
     resetPassword: (email: string) => Promise<void>;
+    logout: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -30,17 +33,22 @@ export const AuthProvider: React.FC<any> = ({ children }) => {
     const [user, setUser] = useState<User | null>(null);
     const [loading, setLoading] = useState(true)
 
-    // Firebase Signup function
     const signup = async (email: string, password: string) => {
         const response = await createUserWithEmailAndPassword(auth, email, password);
+        return response.user;
     };
 
     const login = async (email: string, password: string) => {
         const response = await signInWithEmailAndPassword(auth, email, password);
+        return response.user;
     }
 
     const resetPassword = async (email: string) => {
         const response = await sendPasswordResetEmail(auth, email);
+    }
+
+    const logout = async () => {
+        await signOut(auth);
     }
 
     // Check if the user is already logged in (e.g., on page refresh)
@@ -59,7 +67,8 @@ export const AuthProvider: React.FC<any> = ({ children }) => {
         user,
         signup,
         login,
-        resetPassword
+        resetPassword,
+        logout
     };
 
     return <AuthContext.Provider value={authContextValue}>{!loading && children}</AuthContext.Provider>;

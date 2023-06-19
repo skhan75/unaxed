@@ -2,7 +2,9 @@ import React from 'react';
 import { ProfileFormInterface } from '../interfaces/ProfileFormInterface';
 import JustText from './JustText';
 import Dropdown  from './Dropdown';
-import { addFieldsToCollection } from '../firebase';
+import { createDataForNewUser } from '../firebase';
+import { useNavigate } from "react-router-dom";
+import { useAuth } from '../contexts/AuthContext';
 
 const options = [
     { value: 'automotive', label: 'Automotive' },
@@ -19,13 +21,9 @@ const options = [
 ];
 
 const NewUserProfile: React.FC<any> = () => {
-    const handleSaveData = async () => {
-        try {
-            await addFieldsToCollection('users', userProfile);
-        } catch (error) {
-            console.error('Error saving data:', error);
-        }
-    };
+    const navigate = useNavigate();
+    const { user } = useAuth();
+    
     const [userProfile, setUserProfile] = React.useState<ProfileFormInterface>({
         firstName: '',
         middleName: '',
@@ -34,6 +32,7 @@ const NewUserProfile: React.FC<any> = () => {
         city: '',
         postalCode: '',
         experience: {
+            yoe: '',
             current: {
                 title: '',
                 company: '',
@@ -44,24 +43,27 @@ const NewUserProfile: React.FC<any> = () => {
     });
      
     const handleUpdate = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const { name, value } = e.target;
-        const nestedNames = name.split('.');
-        let updatedProfile: ProfileFormInterface = { ...userProfile };
+        try {
+            const { name, value } = e.target;
+            const nestedNames = name.split('.');
+            let updatedProfile: ProfileFormInterface = { ...userProfile };
 
-        let currentLevel: any = updatedProfile;
-        for (let i = 0; i < nestedNames.length; i++) {
-            const nestedName = nestedNames[i];
-            if (i === nestedNames.length - 1) {
-                currentLevel[nestedName] = value;
-            } else {
-                if (!currentLevel[nestedName]) {
-                    currentLevel[nestedName] = {};
+            let currentLevel: any = updatedProfile;
+            for (let i = 0; i < nestedNames.length; i++) {
+                const nestedName = nestedNames[i];
+                if (i === nestedNames.length - 1) {
+                    currentLevel[nestedName] = value;
+                } else {
+                    if (!currentLevel[nestedName]) {
+                        currentLevel[nestedName] = {};
+                    }
+                    currentLevel = currentLevel[nestedName] as ProfileFormInterface;
                 }
-                currentLevel = currentLevel[nestedName] as ProfileFormInterface;
             }
+            setUserProfile(updatedProfile);
+        } catch(e) {
+            console.error(e);
         }
-
-        setUserProfile(updatedProfile);
     };
     const handleDropdownSelect = (selectedValue: string) => {
         if(userProfile.experience) {
@@ -78,7 +80,16 @@ const NewUserProfile: React.FC<any> = () => {
         }
     };
 
-    console.log('userProfile:', userProfile)
+    const handleSaveData = async () => {
+        console.log("Saving data...");
+        try {
+            await createDataForNewUser('users', userProfile, user);
+            console.log('Data saved successfully!');
+            navigate('/');
+        } catch (error) {
+            console.error('Error saving data:', error);
+        }
+    };
 
     return (
         <>
@@ -122,7 +133,7 @@ const NewUserProfile: React.FC<any> = () => {
                 />
                 <div className="spaced-evenly">
                     <button className="btn-outline" type="submit">Back</button>
-                    <button className="btn-primary" type="submit" onClick={handleSaveData}>Next</button>
+                    <button className="btn-primary" type="button" onClick={handleSaveData}>Next</button>
                 </div>
             </form>
         </>
