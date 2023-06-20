@@ -154,8 +154,12 @@ button:hover {
             display: flex;
             justify-content: space-evenly;
             align-items: center;
+            padding-bottom: 20px;
             /* justify-content: center; */
             /* width: 200px; */
+        }
+        .info-section {
+            padding-top: 20px;
         }
         .followers-container,
         .following-container {
@@ -455,4 +459,40 @@ button:hover {
     display: flex;
     gap: 1.5rem;
     align-items: center;
+}
+
+.medium-font {
+    font-size: 18px;
+    font-family: Quicksand;
+    font-weight: 600;
+}
+
+.full-width-line {
+    /* flex:1; */
+    width: 100%;
+    height: 1px;
+    background-color: #c6c6c699;
+    margin: 12px 0;
+}
+
+.edit-profile-btns {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+    gap: 1.5rem;
+    margin-top: 20px;
+
+    .cancel-btn {
+        background-color: #e0e0e0;
+        color: #333;
+        border: none;
+        padding: 10px;
+    }
+
+    .save-btn {
+        /* background-color: #4caf50; */
+        color: #fff;
+        border: none;
+        padding: 10px;
+    }
 }

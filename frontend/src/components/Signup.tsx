@@ -3,7 +3,7 @@ import Alert  from "./Alert";
 import { useAuth } from "../contexts/AuthContext";
 import { FirebaseError } from "firebase/app";
 import { useNavigate } from "react-router-dom";
-import { updateDataForUser } from '../firebase';
+import { updateUserData } from '../firebase';
 
 
 export const Signup: React.FC<any> = (props) => {
@@ -30,7 +30,7 @@ export const Signup: React.FC<any> = (props) => {
                     return;
                 }
                 const user = await signup(email, password);
-                await updateDataForUser({ email }, user);
+                await updateUserData({ email }, user);
                 navigate('/create-profile');
             }
         } catch (error: any) {

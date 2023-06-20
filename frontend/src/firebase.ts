@@ -1,6 +1,6 @@
 import { initializeApp } from 'firebase/app';
 import 'firebase/auth';
-import { getFirestore, collection, addDoc, doc, setDoc, getDoc } from "firebase/firestore";
+import { getFirestore, collection, addDoc, doc, setDoc, getDoc, updateDoc } from "firebase/firestore";
 import { getAuth, createUserWithEmailAndPassword, onAuthStateChanged, User } from "firebase/auth";
 
 const firebaseConfig = {
@@ -29,11 +29,12 @@ export const createDataForNewUser = async (collectionName: string, newUserData: 
   }
 }
 
-export const updateDataForUser = async (newUserData: any, user: User|null) => {
+export const updateUserData = async (newUserData: any, user: User|null) => {
   try {
+    console.log("Updating user data");
     const usersCollection = collection(db, 'users');
     const userDocRef = doc(usersCollection, user?.uid);
-    await setDoc(userDocRef, {...newUserData});
+    await updateDoc(userDocRef, {...newUserData});
     console.log('Document successfully updated!');
   } catch (e) {
     console.error("Error adding document: ", e);
