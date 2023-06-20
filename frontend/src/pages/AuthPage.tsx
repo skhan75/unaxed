@@ -18,9 +18,9 @@ const renderSwitch = (type: any) => {
 
 const AuthPage: React.FC<any> = (props) => {
     return (
-        <div className="login-page-container">
-            <div className="login-box-container">
-                <div className="login-box">
+        <div className="auth-page-container">
+            <div className="auth-box-container">
+                <div className="auth-box">
                     {
                         renderSwitch(props.type)
                     }

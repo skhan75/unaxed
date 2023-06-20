@@ -6,6 +6,7 @@ import PrivateRoute from './components/PrivateRoute';
 import Dashboard from './components/Dashboard';
 import NewProfileInformationPage from './pages/NewProfileInformationPage';
 import { Navbar } from './components/Navbar';
+import { UserProfile } from './components/UserProfile';
 
 function App() {
   return (
@@ -23,6 +24,7 @@ function App() {
               <Route element={<PrivateRoute />}>
                 <Route path="/" element={<Dashboard />} />
                 <Route path="/home" element={<Dashboard />} />
+                <Route path="/profile" element={<UserProfile />} />
               </Route>
             </Routes>
           </div>

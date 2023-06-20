@@ -5,6 +5,7 @@ import Dropdown  from './Dropdown';
 import { createDataForNewUser } from '../firebase';
 import { useNavigate } from "react-router-dom";
 import { useAuth } from '../contexts/AuthContext';
+import Alert from './Alert';
 
 const options = [
     { value: 'automotive', label: 'Automotive' },
@@ -24,13 +25,16 @@ const NewUser: React.FC<any> = () => {
     const navigate = useNavigate();
     const { user } = useAuth();
     
+    const [isUsernameAvailable, setIsUsernameAvailable] = React.useState<boolean>(false);
     const [userProfile, setUserProfile] = React.useState<ProfileFormInterface>({
+        username: '',
         firstName: '',
         middleName: '',
         lastName: '',
         country: '',
         city: '',
         postalCode: '',
+        bio: '',
         experience: {
             yoe: '',
             current: {
@@ -39,7 +43,9 @@ const NewUser: React.FC<any> = () => {
                 industry: '',
             },
         },
-        education: [],
+        followers: 0,
+        following: 0,
+        stars: 0,
     });
      
     const handleUpdate = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -91,19 +97,45 @@ const NewUser: React.FC<any> = () => {
         }
     };
 
+    const handleCheckUserName = async (userProfile: any) => {
+        console.log("Checking username...");
+        try {
+            setIsUsernameAvailable(true);
+        } catch (error) {
+            console.error('Error checking username:', error);
+        }  
+    };
+
     return (
         <>
             <h2>Welcome to Unaxed! Tell us something about yourself.</h2>
             <form className="new-profile-form">
+                <label>username *</label>
+                <input
+                    type="text" value={userProfile.username} name="username" required onChange={handleUpdate}
+                />
+                <div className="check-username-availabiliy">
+                    <button className="check-username-btn" type="button" onClick={handleCheckUserName}>
+                        Check Availability
+                    </button>
+                    {isUsernameAvailable && (
+                        <Alert variant="success" message="Username is available!" />
+                    )}
+                </div>
                 <JustText text="About You"/>
                 <label>First Name *</label>
-                <input 
-                    type="text" value={userProfile.firstName} name="firstName" required onChange={handleUpdate} 
+                <input
+                    type="text" value={userProfile.firstName} name="firstName" required onChange={handleUpdate}
+                />
+                <label>Middle Name </label>
+                <input
+                    type="text" value={userProfile.middleName} name="middleName" onChange={handleUpdate}
                 />
                 <label>Last Name *</label>
-                <input 
-                    type="text" value={userProfile.lastName} name="lastName" required onChange={handleUpdate} 
+                <input
+                    type="text" value={userProfile.lastName} name="lastName" required onChange={handleUpdate}
                 />
+               
                 <label>Country/Region *</label>
                 <input 
                     type="text" value={userProfile.country} name="country" required onChange={handleUpdate} 

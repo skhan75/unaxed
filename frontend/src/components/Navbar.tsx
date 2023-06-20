@@ -5,7 +5,7 @@ import { AiFillHome } from "react-icons/ai";
 import { IconContext } from "react-icons";
 import { Avatar } from "./Avatar";
 import { Link, useLocation } from "react-router-dom";
-// import { useState } from "react";
+import SearchBar from "./SearchBar";
 
 
 export const Navbar: React.FC<{}> = (props) => {
@@ -21,7 +21,7 @@ export const Navbar: React.FC<{}> = (props) => {
                     <ul>
                         <li>
                             <div className="unaxed-logo">
-                                <a href="/" className="site-title">UnAxed</a>
+                                <a href="/" className="site-title">unaxed</a>
                             </div>
                         </li>
                     </ul>
@@ -30,7 +30,7 @@ export const Navbar: React.FC<{}> = (props) => {
                     <div className="bubbles-center-container">
                         {/* TODO */}
                         <li>
-                            center
+                            <SearchBar />
                         </li>
                     </div>
                 )}

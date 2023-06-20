@@ -1,4 +1,5 @@
 interface ProfileFormInterface {
+    username: string,
     firstName: string,
     middleName: string,
     lastName: string,
@@ -6,12 +7,18 @@ interface ProfileFormInterface {
     city: string,
     postalCode: string,
     bio?: string,
+    website?: string,
+    email?: string,
+    followers?: number,
+    following?: number,
+    stars?: number,
     experience?: {
         yoe?: string,
         current: {
             title: string,
             company: string,
             industry: string,
+            location?: string,
         },
         past?: {
             title: string,

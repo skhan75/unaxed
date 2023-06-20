@@ -1,8 +1,7 @@
 import React, { useRef, useState, useEffect } from "react";
 import Alert from "./Alert";
 import { useAuth } from "../contexts/AuthContext";
-import { FirebaseError } from "firebase/app";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 export const Login: React.FC<any> = (props) => {
     const emailRef = useRef<HTMLInputElement>(null);
@@ -11,16 +10,7 @@ export const Login: React.FC<any> = (props) => {
     const [error, setError] = useState<string>('');
     const [loading, setLoading] = useState<boolean>(false);
     const navigate = useNavigate();
-
-    useEffect(() => {
-        const lastLocation = localStorage.getItem('lastLocation');
-        if (lastLocation) {
-            // Clear the stored last location
-            localStorage.removeItem('lastLocation');
-            // Redirect the user to the last visited location
-            navigate(lastLocation);
-        }
-    }, []);
+    const lastLocation = localStorage.getItem('lastLocation');
 
     const handleSubmit = async (e: any) => {
         e.preventDefault();
@@ -31,7 +21,12 @@ export const Login: React.FC<any> = (props) => {
                 const email = emailRef.current.value;
                 const password = passwordRef.current.value;
                 await login(email, password);
-                navigate('/');
+                if (lastLocation) {
+                    localStorage.removeItem('lastLocation');
+                    navigate(lastLocation);
+                } else {
+                    navigate('/');
+                }
             }
         } catch (error: any) {
             setError('Failed to sign in! ' + error.code);
