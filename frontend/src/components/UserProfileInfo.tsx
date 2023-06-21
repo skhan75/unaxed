@@ -22,7 +22,6 @@ const UserProfileInfo: React.FC<any> = (props) => {
         bio: userData?.bio || '',
     });
 
-
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         const { name, value } = e.target;
         setFormValues((prevValues) => ({

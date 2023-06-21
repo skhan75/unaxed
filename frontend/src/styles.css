@@ -46,10 +46,10 @@ code {
 input[type=text],
 input[type=password],
 input[type=email] {
-    width: 100%;
+    width: 400px;
     padding: 12px 20px;
     margin: 8px 0;
-    display: inline-block;
+    display: flex;
     border: 1px solid #ccc;
     box-sizing: border-box;
 }
@@ -69,6 +69,12 @@ button:hover {
     opacity: 0.8;
 }
 
+button:disabled {
+    background-color: #ccc;
+    color: #666;
+    cursor: not-allowed;
+}
+
 .site-title {
     font-size: 2.5rem;
     font-weight: 900;
@@ -83,21 +89,22 @@ button:hover {
 }
 
 .auth-page-container {
-    height: 100vh;
+    /* height: 100vh; */
     display: flex;
     justify-content: center;
     margin-top: var(--auth-page-margin-top);
     .auth-box-container {
         height: fit-content;
+        width: 500px;
         padding: 30px;
         background-color: var(--secondary-bg);
         box-shadow: 0 2px 4px 0 rgba(0, 0, 0, .1);
         .auth-box {
-                display: flex;
-                flex-direction: column;
-                align-items: center;
-                justify-content: center;
-            }
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
     }
 }
 
@@ -108,14 +115,12 @@ button:hover {
 .profile-page-container {
     display: flex;
     /* padding: var(--page-padding); */
-    /* margin-left: 20%;
-    margin-right: 20%; */
     align-items: center;
     justify-content: center;
 }
 
 .column {
-    flex: 1;
+    /* flex: 1; */
     /* Distribute space equally */
     /* padding: 20px; */
     height: 100vh;
@@ -350,9 +355,6 @@ button:hover {
 
 .unaxed-center-container {
     width: 50%;
-    /* float: center; */
-    /* justify-content: center; */
-    /* display: flex; */
 }
 
 .unaxed-right-container {

@@ -1,8 +1,16 @@
 import { initializeApp } from 'firebase/app';
 import 'firebase/auth';
-import { getFirestore, collection, addDoc, doc, setDoc, getDoc, updateDoc } from "firebase/firestore";
-import { getAuth, createUserWithEmailAndPassword, onAuthStateChanged, User } from "firebase/auth";
-import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import { 
+  getFirestore, collection, 
+  doc, setDoc, getDoc, updateDoc, 
+  query, where, getDocs 
+} from "firebase/firestore";
+import { 
+  getAuth, User 
+} from "firebase/auth";
+import { 
+  getStorage, ref, uploadBytes, getDownloadURL 
+} from "firebase/storage";
 
 const firebaseConfig = {
   apiKey: process.env.REACT_APP_API_KEY,
@@ -20,12 +28,36 @@ export const auth = getAuth(app);
 const db = getFirestore(app);
 const storage = getStorage(app);
 
+export const checkUserNameAvailability = async (username: string): Promise<boolean> => {
+  try {
+    const usersRef = collection(db, "users");
+    const q = query(usersRef, where("username", "==", username));
+    const querySnapshot = await getDocs(q);
+    return querySnapshot.empty;
+  } catch (error) {
+    console.error("Error checking username availability:", error);
+    return false;
+  }
+};
+
 export const createDataForNewUser = async (collectionName: string, newUserData: any, user: User|null) => {
   try {
     const usersCollection = collection(db, 'users');
     const userDocRef = doc(usersCollection, user?.uid);
     await setDoc(userDocRef, {...newUserData});
     console.log('Document successfully written!');
+  } catch (e) {
+    console.error("Error adding document: ", e);
+  }
+}
+
+export const setUserData = async (newUserData: any, user: User | null) => {
+  try {
+    console.log("Updating user data");
+    const usersCollection = collection(db, 'users');
+    const userDocRef = doc(usersCollection, user?.uid);
+    await setDoc(userDocRef, { ...newUserData });
+    console.log('Document successfully added!');
   } catch (e) {
     console.error("Error adding document: ", e);
   }
@@ -39,7 +71,7 @@ export const updateUserData = async (newUserData: any, user: User|null) => {
     await updateDoc(userDocRef, {...newUserData});
     console.log('Document successfully updated!');
   } catch (e) {
-    console.error("Error adding document: ", e);
+    console.error("Error updating document: ", e);
   }
 }
 

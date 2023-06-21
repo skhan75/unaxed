@@ -21,9 +21,11 @@ function App() {
               <Route path='/forgot-password' element={<AuthPage type='forgot' />} />
               <Route path='/create-profile' element={<NewProfileInformationPage />} />
               <Route path='/logout' element={<Dashboard />} />
+              
               <Route element={<PrivateRoute />}>
                 <Route path="/" element={<Dashboard />} />
                 <Route path="/home" element={<Dashboard />} />
+                {/* <Route path=":username" element={<UserProfile />} /> */}
                 <Route path="/profile" element={<UserProfile />} />
               </Route>
             </Routes>

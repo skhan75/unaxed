@@ -25,9 +25,8 @@ const NewUser: React.FC<any> = () => {
     const navigate = useNavigate();
     const { user } = useAuth();
     
-    const [isUsernameAvailable, setIsUsernameAvailable] = React.useState<boolean>(false);
+    
     const [userProfile, setUserProfile] = React.useState<ProfileFormInterface>({
-        username: '',
         firstName: '',
         middleName: '',
         lastName: '',
@@ -97,31 +96,13 @@ const NewUser: React.FC<any> = () => {
         }
     };
 
-    const handleCheckUserName = async (userProfile: any) => {
-        console.log("Checking username...");
-        try {
-            setIsUsernameAvailable(true);
-        } catch (error) {
-            console.error('Error checking username:', error);
-        }  
-    };
+   
 
     return (
         <>
             <h2>Welcome to Unaxed! Tell us something about yourself.</h2>
             <form className="new-profile-form">
-                <label>username *</label>
-                <input
-                    type="text" value={userProfile.username} name="username" required onChange={handleUpdate}
-                />
-                <div className="check-username-availabiliy">
-                    <button className="check-username-btn" type="button" onClick={handleCheckUserName}>
-                        Check Availability
-                    </button>
-                    {isUsernameAvailable && (
-                        <Alert variant="success" message="Username is available!" />
-                    )}
-                </div>
+               
                 <JustText text="About You"/>
                 <label>First Name *</label>
                 <input
