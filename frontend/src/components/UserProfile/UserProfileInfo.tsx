@@ -1,22 +1,21 @@
 import React, { useEffect, useState } from 'react';
 import { DocumentData } from 'firebase/firestore';
-import { updateUserData, uploadProfileImage } from '../firebase';
+import { updateUserData, uploadProfileImage } from '../../firebase';
 import { FaBuilding, FaMapMarkerAlt, FaLink, FaCalendarAlt, FaEnvelope } from 'react-icons/fa';
-import UserAvatar from './UserAvatar';
-import JustText from './JustText';
-import JustLineSeparator from './JustLineSeparator';
+import UserAvatar from '../UserAvatar';
+import JustText from '../JustText';
+import JustLineSeparator from '../JustLineSeparator';
 
 
-const UserProfileInfo: React.FC<any> = ({ user, userProfileData, isUserProfile }) => {
-    const [userData, setUserData] = useState<DocumentData | null>(null);
+const UserProfileInfo: React.FC<any> = ({ user, userProfileData, isAuthUserProfile }) => {
     const [isLoading, setIsLoading] = useState(true);
     const [editMode, setEditMode] = useState(false);
     const [imageFile, setImageFile] = useState<File | null>(null);
     const [formValues, setFormValues] = useState({
-        company: userData?.experience?.current?.company || '',
-        location: userData?.experience?.current?.location || '',
-        website: userData?.website || '',
-        bio: userData?.bio || '',
+        company: userProfileData?.experience?.current?.company || '',
+        location: userProfileData?.experience?.current?.location || '',
+        website: userProfileData?.website || '',
+        bio: userProfileData?.bio || '',
     });
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -59,19 +58,18 @@ const UserProfileInfo: React.FC<any> = ({ user, userProfileData, isUserProfile }
             const imageUrl = await uploadProfileImage(imageFile, user);
             Object.assign(updatedData, { profileImageUrl: imageUrl });
         }
-        setUserData((prevData) => ({
-            ...prevData,
-            ...updatedData,
-        }));
 
         await updateUserData(updatedData, user);
         setEditMode(false);
     };
 
+    const handleFollow = () => {
+        console.log('Follow');
+    };
+
     useEffect(() => {
         const fetchDataForUser = async () => {
             try {
-                setUserData(userProfileData || null);
                 setIsLoading(false);
                 setFormValues({
                     company: userProfileData?.experience?.current?.company || '',
@@ -95,25 +93,23 @@ const UserProfileInfo: React.FC<any> = ({ user, userProfileData, isUserProfile }
                 <div className="profile-info-container">
                     <div className="profile-avatar-container">
                         <UserAvatar
-                            firstName={userData?.firstName}
-                            lastName={userData?.lastName}
+                            firstName={userProfileData?.firstName}
+                            lastName={userProfileData?.lastName}
                             size={300}
-                            profileImageUrl={userData?.profileImageUrl || undefined}
+                            profileImageUrl={userProfileData?.profileImageUrl || undefined}
                             className="profile-avatar"
                         />
                     </div>
-                    
                     <div className="info-top">
-
-                        {editMode && (
+                        {(editMode && isAuthUserProfile) && (
                             <div className="image-upload">
                                 <input type="file" accept="image/*" onChange={handleImageUpload} />
                             </div>
                         )}
                         <div className="profile-info">
-                            <div className="name">{`${userData?.firstName} ${userData?.lastName}`}</div>
-                            <div className="username">{`@${userData?.username}`}</div>
-                            {editMode ? (
+                            <div className="name">{`${userProfileData?.firstName} ${userProfileData?.lastName}`}</div>
+                            <div className="username">{`@${userProfileData?.username}`}</div>
+                            {(editMode && isAuthUserProfile) ? (
                                 <textarea
                                     name="bio"
                                     value={formValues.bio}
@@ -122,26 +118,34 @@ const UserProfileInfo: React.FC<any> = ({ user, userProfileData, isUserProfile }
                                     className="bio-edit"
                                 />
                             ) : (
-                                <div className="bio">{userData?.bio}</div>
+                                    <div className="bio">{userProfileData?.bio}</div>
                             )}
                         </div>
                     </div>
                     <div className="info-bottom">
                         <div className="followers-following-container">
                             <div className="followers-container">
-                                <span className="count">{userData?.stars || 0}</span>
+                                <span className="count">{userProfileData?.stars || 0}</span>
                                 <span className="label">Stars</span>
                             </div>
                             <div className="followers-container">
-                                <span className="count">{userData?.followers || 0}</span>
+                                <span className="count">{userProfileData?.followersCount || 0}</span>
                                 <span className="label">Followers</span>
                             </div>
                             <div className="following-container">
-                                <span className="count">{userData?.following || 0}</span>
+                                <span className="count">{userProfileData?.followingCount || 0}</span>
                                 <span className="label">Following</span>
                             </div>
                         </div>
-                        <button className="edit-profile-btn" onClick={handleEditProfile}>Edit Profile</button>
+                        {isAuthUserProfile ? (
+                            <button className="edit-profile-btn" onClick={handleEditProfile}>
+                                Edit Profile
+                            </button>
+                        ) : (
+                            <button className="edit-profile-btn" onClick={handleFollow}>
+                                Follow
+                            </button>
+                        )}
                         <div className="info-section">
                             {editMode ? (
                                 <>
@@ -186,19 +190,19 @@ const UserProfileInfo: React.FC<any> = ({ user, userProfileData, isUserProfile }
                             ) :
                                 (
                                     <>
-                                        {userData?.experience?.current?.company && (
+                                        {userProfileData?.experience?.current?.company && (
                                             <div className="company">
                                                 <FaBuilding className="icon" />
-                                                {userData?.experience?.current?.company || ''}
+                                                {userProfileData?.experience?.current?.company || ''}
                                             </div>
                                         )}
-                                        {userData?.experience?.current?.location && (
+                                        {userProfileData?.experience?.current?.location && (
                                             <div className="location">
                                                 <FaMapMarkerAlt className="icon" />
-                                                {userData?.experience?.current?.location}
+                                                {userProfileData?.experience?.current?.location}
                                             </div>
                                         )}
-                                        {userData?.website && (
+                                        {userProfileData?.website && (
                                             <div className="website">
                                                 <FaLink className="icon" />
                                                 Website

@@ -10,6 +10,8 @@ interface UserDataInterface {
     email?: string,
     followers?: number,
     following?: number,
+    followersList?: string[],
+    followingList?: string[],
     stars?: number,
     experience?: {
         yoe?: string,

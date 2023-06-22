@@ -28,6 +28,35 @@ export const auth = getAuth(app);
 const db = getFirestore(app);
 const storage = getStorage(app);
 const usersCollection = collection(db, 'users');
+const followersCollection = collection(db, 'followers');
+const followingCollection = collection(db, 'following');
+
+
+export const getFollowing = async (user: User|null) => {
+  try {
+    const docRef = doc(followingCollection, user?.uid);
+    const docSnap = await getDoc(docRef);
+    if (docSnap.exists()) {
+      return docSnap.data();
+    }
+    console.log("No such document!");
+  } catch (e) {
+    console.error("Error adding document: ", e);
+  }
+}
+
+export const getFollowers = async (user: User|null) => {
+  try {
+    const docRef = doc(followersCollection, user?.uid);
+    const docSnap = await getDoc(docRef);
+    if (docSnap.exists()) {
+      return docSnap.data();
+    }
+    console.log("No such document!");
+  } catch (e) {
+    console.error("Error adding document: ", e);
+  }
+}
 
 export const checkUserNameAvailability = async (username: string): Promise<boolean> => {
   try {

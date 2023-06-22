@@ -6,7 +6,7 @@ import PrivateRoute from './components/PrivateRoute';
 import Dashboard from './components/Dashboard';
 import NewProfileInformationPage from './pages/NewProfileInformationPage';
 import {Navbar} from './components/Navbar';
-import { UserProfile } from './components/UserProfile';
+import { UserProfile } from './components/UserProfile/UserProfile';
 import { UserProvider } from './contexts/UserContext';
 
 function App() {

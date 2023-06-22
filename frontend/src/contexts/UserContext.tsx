@@ -1,6 +1,5 @@
 import React, { createContext, useState, useEffect, useContext } from 'react';
-import { UserDataInterface } from '../interfaces/UserDataInterface';
-import { getDataForUser } from '../firebase';
+import { getDataForUser, getFollowers, getFollowing } from '../firebase';
 import { useAuth } from "../contexts/AuthContext";
 import { DocumentData } from 'firebase/firestore';
 
@@ -20,18 +19,27 @@ export const useUser = () => {
     return userContext;
 };
 
-
 export const UserProvider: React.FC<any> = ({ children }) => {
     const [userData, setUserData] = useState<DocumentData | null>(null);
     const [loading, setLoading] = useState(true)
     const { user } = useAuth();
 
-    // Fetch user data here
+    // Fetch user data here one time for all childs
     useEffect(() => {
         const fetchUserData = async () => {
             try {
-                const data = await getDataForUser(user);
-                setUserData(data || null);
+                setLoading(true);
+                const userData = await getDataForUser(user);
+                const followersData = await getFollowers(user);
+                const followingData = await getFollowing(user);
+                const updatedUserData = {
+                    ...userData,
+                    followers: followersData || {},
+                    followersCount: followersData ? Object.keys(followersData).length : 0,
+                    following: followingData || {},
+                    followingCount: followingData ? Object.keys(followingData).length : 0,
+                };
+                setUserData(updatedUserData || null);
                 setLoading(false);
             } catch (error) {
                 console.error('Error retrieving user data:', error);
