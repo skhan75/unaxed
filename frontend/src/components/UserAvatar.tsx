@@ -16,6 +16,7 @@ const UserAvatar: React.FC<UserAvatarProps> = ({
     className,
 }) => {
     const getInitials = (firstName: string, lastName: string) => {
+        if(firstName === undefined || lastName === undefined) return;
         const firstInitial = firstName.charAt(0).toUpperCase();
         const lastInitial = lastName.charAt(0).toUpperCase();
         return firstInitial + lastInitial;
@@ -36,6 +37,11 @@ const UserAvatar: React.FC<UserAvatarProps> = ({
         color: '#fff',
     };
 
+    const imageStyle: React.CSSProperties = {
+        ...avatarStyle,
+        objectFit: 'cover',
+    };
+
     return (
         <div className={className} style={avatarStyle}>
             {profileImageUrl ? (
@@ -43,7 +49,7 @@ const UserAvatar: React.FC<UserAvatarProps> = ({
                     className="profile-avatar"
                     src={profileImageUrl}
                     alt="User Avatar"
-                    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                    style={imageStyle}
                 />
             ) : (
                 initials

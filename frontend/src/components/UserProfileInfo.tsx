@@ -1,16 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { DocumentData } from 'firebase/firestore';
-import { User } from 'firebase/auth';
-import { useAuth } from "../contexts/AuthContext";
-import { getDateForUser, updateUserData, uploadProfileImage } from '../firebase';
+import { updateUserData, uploadProfileImage } from '../firebase';
 import { FaBuilding, FaMapMarkerAlt, FaLink, FaCalendarAlt, FaEnvelope } from 'react-icons/fa';
 import UserAvatar from './UserAvatar';
 import JustText from './JustText';
 import JustLineSeparator from './JustLineSeparator';
 
 
-const UserProfileInfo: React.FC<any> = (props) => {
-    const { user } = useAuth();
+const UserProfileInfo: React.FC<any> = ({ user, userProfileData, isUserProfile }) => {
     const [userData, setUserData] = useState<DocumentData | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [editMode, setEditMode] = useState(false);
@@ -72,26 +69,24 @@ const UserProfileInfo: React.FC<any> = (props) => {
     };
 
     useEffect(() => {
-        const fetchDataForUser = async (user: User) => {
+        const fetchDataForUser = async () => {
             try {
-                const data = await getDateForUser(user);
-                setUserData(data || null);
+                setUserData(userProfileData || null);
                 setIsLoading(false);
                 setFormValues({
-                    company: data?.experience?.current?.company || '',
-                    location: data?.experience?.current?.location || '',
-                    website: data?.website || '',
-                    bio: data?.bio || '',
+                    company: userProfileData?.experience?.current?.company || '',
+                    location: userProfileData?.experience?.current?.location || '',
+                    website: userProfileData?.website || '',
+                    bio: userProfileData?.bio || '',
                 });
             } catch (error) {
                 console.error('Error retrieving user data:', error);
                 setIsLoading(false);
             }
         };
-
         if (user) {
             setIsLoading(true);
-            fetchDataForUser(user);
+            fetchDataForUser();
         }
     }, [user]);
     return (

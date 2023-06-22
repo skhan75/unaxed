@@ -1,11 +1,10 @@
 import React from 'react';
-import { ProfileFormInterface } from '../interfaces/ProfileFormInterface';
+import { UserDataInterface } from '../interfaces/UserDataInterface';
 import JustText from './JustText';
-import Dropdown  from './Dropdown';
+import Dropdown  from './SelectDropdown';
 import { createDataForNewUser } from '../firebase';
 import { useNavigate } from "react-router-dom";
 import { useAuth } from '../contexts/AuthContext';
-import Alert from './Alert';
 
 const options = [
     { value: 'automotive', label: 'Automotive' },
@@ -26,7 +25,7 @@ const NewUser: React.FC<any> = () => {
     const { user } = useAuth();
     
     
-    const [userProfile, setUserProfile] = React.useState<ProfileFormInterface>({
+    const [userProfile, setUserProfile] = React.useState<UserDataInterface>({
         firstName: '',
         middleName: '',
         lastName: '',
@@ -51,7 +50,7 @@ const NewUser: React.FC<any> = () => {
         try {
             const { name, value } = e.target;
             const nestedNames = name.split('.');
-            let updatedProfile: ProfileFormInterface = { ...userProfile };
+            let updatedProfile: UserDataInterface = { ...userProfile };
 
             let currentLevel: any = updatedProfile;
             for (let i = 0; i < nestedNames.length; i++) {
@@ -62,7 +61,7 @@ const NewUser: React.FC<any> = () => {
                     if (!currentLevel[nestedName]) {
                         currentLevel[nestedName] = {};
                     }
-                    currentLevel = currentLevel[nestedName] as ProfileFormInterface;
+                    currentLevel = currentLevel[nestedName] as UserDataInterface;
                 }
             }
             setUserProfile(updatedProfile);

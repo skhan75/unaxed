@@ -27,6 +27,7 @@ const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
 const db = getFirestore(app);
 const storage = getStorage(app);
+const usersCollection = collection(db, 'users');
 
 export const checkUserNameAvailability = async (username: string): Promise<boolean> => {
   try {
@@ -42,7 +43,6 @@ export const checkUserNameAvailability = async (username: string): Promise<boole
 
 export const createDataForNewUser = async (collectionName: string, newUserData: any, user: User|null) => {
   try {
-    const usersCollection = collection(db, 'users');
     const userDocRef = doc(usersCollection, user?.uid);
     await setDoc(userDocRef, {...newUserData});
     console.log('Document successfully written!');
@@ -54,7 +54,6 @@ export const createDataForNewUser = async (collectionName: string, newUserData: 
 export const setUserData = async (newUserData: any, user: User | null) => {
   try {
     console.log("Updating user data");
-    const usersCollection = collection(db, 'users');
     const userDocRef = doc(usersCollection, user?.uid);
     await setDoc(userDocRef, { ...newUserData });
     console.log('Document successfully added!');
@@ -66,7 +65,6 @@ export const setUserData = async (newUserData: any, user: User | null) => {
 export const updateUserData = async (newUserData: any, user: User|null) => {
   try {
     console.log("Updating user data");
-    const usersCollection = collection(db, 'users');
     const userDocRef = doc(usersCollection, user?.uid);
     await updateDoc(userDocRef, {...newUserData});
     console.log('Document successfully updated!');
@@ -75,9 +73,9 @@ export const updateUserData = async (newUserData: any, user: User|null) => {
   }
 }
 
-export const getDateForUser = async (user: User|null) => {
+export const getDataForUser = async (user: User|null) => {
   try {
-    const usersCollection = collection(db, 'users');
+    
     const docRef = doc(usersCollection, user?.uid);
     const docSnap = await getDoc(docRef);
     if (docSnap.exists()) {
@@ -89,6 +87,19 @@ export const getDateForUser = async (user: User|null) => {
   }
 }
 
+export const getDataForUserByUsername = async (username: string) => {
+  try {
+    const usersRef = collection(db, "users");
+    const q = query(usersRef, where("username", "==", username));
+    const querySnapshot = await getDocs(q);
+    if (!querySnapshot.empty) {
+      return querySnapshot.docs[0].data();
+    }
+    console.log("No such document!");
+  } catch (e) {
+    console.error("Error adding document: ", e);
+  }
+}
 
 export const uploadProfileImage = async (file: File, user: User|null): Promise<string> => {
   const imageRef = ref(storage, `profile_images/${user?.uid}`);

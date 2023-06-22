@@ -1,4 +1,4 @@
-interface ProfileFormInterface {
+interface UserDataInterface {
     firstName: string,
     middleName: string,
     lastName: string,
@@ -60,4 +60,4 @@ interface ProfileFormInterface {
     }[],
 }
 
-export type { ProfileFormInterface };
+export type { UserDataInterface };

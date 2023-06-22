@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { useAuth } from '../contexts/AuthContext';
 import { Binoculars } from '@styled-icons/boxicons-solid';
 import { FolderOpen } from '@styled-icons/fa-regular';
 import { Users } from '@styled-icons/fa-solid';
@@ -7,14 +6,9 @@ import { RemoveRedEye } from '@styled-icons/material';
 import { Verified } from '@styled-icons/material-outlined';
 
 
-const UserProfileContent: React.FC<any> = (props) => {
-    const { user } = useAuth();
-
+const UserProfileContent: React.FC<any> = ({ user, userProfileData, isUserProfile }) => {
     const [activeTab, setActiveTab] = useState('overview');
-
-    const handleTabChange = (tab) => {
-        setActiveTab(tab);
-    };
+    const handleTabChange = (tab) => setActiveTab(tab);
 
     return (
         <div className="user-profile-content">
