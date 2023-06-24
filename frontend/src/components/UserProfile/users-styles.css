@@ -1,0 +1,12 @@
+.label {
+    font-size: 12px;
+    text-transform: uppercase;
+    
+}
+
+.user-stats {
+    display: flex;
+    flex-direction: column;
+    cursor: pointer;
+    align-items: center;
+}

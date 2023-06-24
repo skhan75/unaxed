@@ -8,6 +8,8 @@ import NewProfileInformationPage from './pages/NewProfileInformationPage';
 import {Navbar} from './components/Navbar';
 import { UserProfile } from './components/UserProfile/UserProfile';
 import { UserProvider } from './contexts/UserContext';
+import Overview from './components/Contents/Overview';
+import Collaborations from './components/Contents/Collaborations';
 
 function App() {
   return (
@@ -27,8 +29,13 @@ function App() {
                 <Route element={<PrivateRoute />}>
                   <Route path="/" element={<Dashboard />} />
                   <Route path="/home" element={<Dashboard />} />
-                  <Route path=":username" element={<UserProfile />} />
+                  <Route path=":username" element={<UserProfile />} >
+                    <Route path=":username/overview" element={<Overview />} />
+                  </Route>
+                  {/* <Route path=":username?tab=overview" element={<Collaborations />} /> */}
+
                   <Route path="/profile" element={<UserProfile />} />
+                  
                 </Route>
               </Routes>
             </div>

@@ -11,6 +11,7 @@ export const Navbar: React.FC<{}> = (props) => {
     const { userData } = useUser();
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
+    console.log('userData', userData?.username)
     const handleAvatarClick = () => {
         setIsDropdownOpen((prevState) => !prevState);
     };
@@ -56,11 +57,11 @@ export const Navbar: React.FC<{}> = (props) => {
                                         profileImageUrl={userData?.profileImageUrl}
                                         size={38}
                                     />
-                                    {isDropdownOpen && (
+                                    {(userData?.username && isDropdownOpen) && (
                                         <div className="profile-dropdown">
                                             <ul className="profile-dropdown-items">
                                                 <li className="profile-item">
-                                                    <Link to="/profile">Profile</Link>
+                                                    <Link to={`/${userData?.username}`}>Profile</Link>
                                                 </li>
                                                 <li className="profile-item">
                                                     <Link to="/settings">Settings</Link>

@@ -2,11 +2,11 @@ import React, { useEffect, useState } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import UserProfileInfo from './UserProfileInfo';
 import UserProfileContent from './UserProfileContent';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { useUser } from '../../contexts/UserContext';
-import NotFound from '../NotFound';
 import { getDataForUserByUsername } from '../../firebase';
 import { DocumentData } from 'firebase/firestore';
+import UserProfileHeaderTabs from './UserProfileHeaderTabs';
 
 export const UserProfile: React.FC<any> = () => {
     const { username } = useParams();
@@ -15,6 +15,8 @@ export const UserProfile: React.FC<any> = () => {
     const [viewProfileData, setViewProfileData] = useState<DocumentData | null>(null);
     const [loading, setLoading] = React.useState<boolean>(true);
     const [isAuthUserProfile, setIsAuthserProfile] = React.useState<boolean>(true);
+    const [activeTab, setActiveTab] = useState('overview');
+    const navigate = useNavigate();
 
     useEffect(() => {
         const fetchUserProfile = async () => {
@@ -26,13 +28,16 @@ export const UserProfile: React.FC<any> = () => {
             }
             setLoading(false);
         }
-        // First check if the view profile is the user's profile or other's public profile
         if (username !== authUserData?.username) {
             setIsAuthserProfile(false);
         }
-        // Fetch the relavant user data
         fetchUserProfile();
     }, [username, authUserData]);
+
+    const handleTabChange = (tabId: string) => {
+        setActiveTab(tabId);
+        navigate(`?tab=${tabId}`);
+    };
 
     return (
         <>  
@@ -40,17 +45,26 @@ export const UserProfile: React.FC<any> = () => {
                 <div className="profile-page-container">
                     <div className="column slim">
                         <UserProfileInfo 
-                            user={user} 
+                            user={user}
                             userProfileData={viewProfileData} 
                             isAuthUserProfile={isAuthUserProfile} 
+                            setActiveTab={handleTabChange}
                         />
                     </div>
                     <div className="column wide">
-                        <UserProfileContent 
-                            user={user} 
-                            userProfileData={viewProfileData} 
-                            isAuthUserProfile={isAuthUserProfile} 
-                        />
+                        <div className="user-profile-content">
+                            <UserProfileHeaderTabs
+                                isAuthUserProfile={isAuthUserProfile}
+                                activeTab={activeTab}
+                                setActiveTab={setActiveTab}
+                                handleTabChange={handleTabChange}
+                            />
+                            <UserProfileContent
+                                user={user}
+                                userProfileData={viewProfileData}
+                                activeTab={activeTab}
+                            />
+                        </div>
                     </div>
                 </div>
             )}  

@@ -39,6 +39,8 @@ export const UserProvider: React.FC<any> = ({ children }) => {
                     following: followingData || {},
                     followingCount: followingData ? Object.keys(followingData).length : 0,
                 };
+
+                console.log('updatedUserData:', updatedUserData)
                 setUserData(updatedUserData || null);
                 setLoading(false);
             } catch (error) {

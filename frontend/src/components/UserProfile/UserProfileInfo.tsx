@@ -1,13 +1,13 @@
 import React, { useEffect, useState } from 'react';
-import { DocumentData } from 'firebase/firestore';
 import { updateUserData, uploadProfileImage } from '../../firebase';
-import { FaBuilding, FaMapMarkerAlt, FaLink, FaCalendarAlt, FaEnvelope } from 'react-icons/fa';
+import { FaBuilding, FaMapMarkerAlt, FaLink, FaCalendarAlt, FaEnvelope, FaHandHoldingHeart, FaUserPlus } from 'react-icons/fa';
 import UserAvatar from '../UserAvatar';
 import JustText from '../JustText';
 import JustLineSeparator from '../JustLineSeparator';
+import { ThumbsUp } from '@styled-icons/fa-solid';
+import './users-styles.css';
 
-
-const UserProfileInfo: React.FC<any> = ({ user, userProfileData, isAuthUserProfile }) => {
+const UserProfileInfo: React.FC<any> = ({ user, userProfileData, isAuthUserProfile, setActiveTab }) => {
     const [isLoading, setIsLoading] = useState(true);
     const [editMode, setEditMode] = useState(false);
     const [imageFile, setImageFile] = useState<File | null>(null);
@@ -17,6 +17,7 @@ const UserProfileInfo: React.FC<any> = ({ user, userProfileData, isAuthUserProfi
         website: userProfileData?.website || '',
         bio: userProfileData?.bio || '',
     });
+    const [ shouldFollow, setShouldFollow ] = useState<boolean>(true);
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         const { name, value } = e.target;
@@ -67,6 +68,11 @@ const UserProfileInfo: React.FC<any> = ({ user, userProfileData, isAuthUserProfi
         console.log('Follow');
     };
 
+    const renderFollowersTab = () => {
+        console.log("Followers")
+        setActiveTab('followers');
+    }
+
     useEffect(() => {
         const fetchDataForUser = async () => {
             try {
@@ -85,6 +91,11 @@ const UserProfileInfo: React.FC<any> = ({ user, userProfileData, isAuthUserProfi
         if (user) {
             setIsLoading(true);
             fetchDataForUser();
+            if (!isAuthUserProfile && userProfileData?.followers) {
+                setShouldFollow(!userProfileData?.followers[user?.uid]);
+            } else {
+                setShouldFollow(true);
+            }
         }
     }, [user]);
     return (
@@ -125,26 +136,49 @@ const UserProfileInfo: React.FC<any> = ({ user, userProfileData, isAuthUserProfi
                     <div className="info-bottom">
                         <div className="followers-following-container">
                             <div className="followers-container">
-                                <span className="count">{userProfileData?.stars || 0}</span>
-                                <span className="label">Stars</span>
+                                <div className="user-stats">
+                                    <span className="count">{userProfileData?.stars || 0}</span>
+                                    <span className="label">Stars</span>
+                                </div> 
                             </div>
                             <div className="followers-container">
-                                <span className="count">{userProfileData?.followersCount || 0}</span>
-                                <span className="label">Followers</span>
+                                <div className="user-stats" onClick={renderFollowersTab}>
+                                    <span className="count">{userProfileData?.followersCount || 0}</span>
+                                    <span className="label">Followers</span>
+                                </div>
                             </div>
                             <div className="following-container">
-                                <span className="count">{userProfileData?.followingCount || 0}</span>
-                                <span className="label">Following</span>
+                                <div className="user-stats">
+                                    <span className="count">{userProfileData?.followingCount || 0}</span>
+                                    <span className="label">Following</span>
+                                </div>
                             </div>
                         </div>
                         {isAuthUserProfile ? (
-                            <button className="edit-profile-btn" onClick={handleEditProfile}>
+                            <button className="profile-btn edit-btn" onClick={handleEditProfile}>
                                 Edit Profile
                             </button>
                         ) : (
-                            <button className="edit-profile-btn" onClick={handleFollow}>
-                                Follow
-                            </button>
+                                <div className="public-profile-btns-container">
+                                    <button 
+                                        className={
+                                            `profile-btn follow-btn ${shouldFollow ? 'follow' : 'unfollow'}`
+                                        } 
+                                        onClick={handleFollow}
+                                    >
+                                        <FaUserPlus className="button-icon" size={16}/>
+                                        {shouldFollow ? 'Follow' : 'Unfollow'}
+                                    </button>
+                                    <button className="profile-btn vouch-btn" onClick={handleFollow}>
+                                        <ThumbsUp className="button-icon" size={16} />
+                                        
+                                        Vouch
+                                    </button>
+                                    <button className="profile-btn sponsor-btn" onClick={handleFollow}>
+                                        <FaHandHoldingHeart className="button-icon" size={16} />
+                                        Sponsor
+                                    </button>
+                                </div>
                         )}
                         <div className="info-section">
                             {editMode ? (
