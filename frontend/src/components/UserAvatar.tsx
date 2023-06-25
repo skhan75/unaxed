@@ -1,8 +1,8 @@
 import React from 'react';
 
 interface UserAvatarProps {
-    firstName: string;
-    lastName: string;
+    firstName?: string;
+    lastName?: string;
     size: number;
     profileImageUrl?: string;
     className?: string;
@@ -16,15 +16,18 @@ const UserAvatar: React.FC<UserAvatarProps> = ({
     className,
 }) => {
     const getInitials = (firstName: string, lastName: string) => {
-        if(firstName === undefined || lastName === undefined) return;
+        if (!firstName || !lastName) return '';
         const firstInitial = firstName.charAt(0).toUpperCase();
         const lastInitial = lastName.charAt(0).toUpperCase();
         return firstInitial + lastInitial;
     };
 
-    const initials = getInitials(firstName, lastName);
+    let initials = '';
+    if (firstName && lastName) {
+        initials = getInitials(firstName, lastName);
+    }
 
-    const avatarStyle = {
+    const avatarStyle: React.CSSProperties = {
         width: size,
         height: size,
         borderRadius: '50%',

@@ -1,13 +1,16 @@
 import React, { useEffect, useState } from 'react';
-import { updateUserData, uploadProfileImage } from '../../firebase';
+import { followUser, unfollowUser, updateUserData, uploadProfileImage } from '../../firebase';
 import { FaBuilding, FaMapMarkerAlt, FaLink, FaCalendarAlt, FaEnvelope, FaHandHoldingHeart, FaUserPlus } from 'react-icons/fa';
 import UserAvatar from '../UserAvatar';
 import JustText from '../JustText';
 import JustLineSeparator from '../JustLineSeparator';
 import { ThumbsUp } from '@styled-icons/fa-solid';
+import { useUser } from '../../contexts/UserContext';
 import './users-styles.css';
 
-const UserProfileInfo: React.FC<any> = ({ user, userProfileData, isAuthUserProfile, setActiveTab }) => {
+const UserProfileInfo: React.FC<any> = ({ 
+    user, userProfileData, isAuthUserProfile, setActiveTab, setUserProfileData
+}) => {
     const [isLoading, setIsLoading] = useState(true);
     const [editMode, setEditMode] = useState(false);
     const [imageFile, setImageFile] = useState<File | null>(null);
@@ -18,6 +21,7 @@ const UserProfileInfo: React.FC<any> = ({ user, userProfileData, isAuthUserProfi
         bio: userProfileData?.bio || '',
     });
     const [ shouldFollow, setShouldFollow ] = useState<boolean>(true);
+    const { userData: primaryUserData } = useUser();
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         const { name, value } = e.target;
@@ -59,40 +63,63 @@ const UserProfileInfo: React.FC<any> = ({ user, userProfileData, isAuthUserProfi
             const imageUrl = await uploadProfileImage(imageFile, user);
             Object.assign(updatedData, { profileImageUrl: imageUrl });
         }
-
         await updateUserData(updatedData, user);
         setEditMode(false);
+        setUserProfileData(prevData => ({
+            ...prevData,
+            bio: formValues.bio,
+        }));
     };
 
-    const handleFollow = () => {
-        console.log('Follow');
+    const handleFollow = async() => {
+        try {
+            setShouldFollow(false);
+            await followUser(user, userProfileData);
+        } catch (error) {
+            setShouldFollow(true);
+            console.error('Error following user:', error);
+        }
+    };
+
+    const handleUnfollow = async() => {
+        try {
+            setShouldFollow(true);
+            await unfollowUser(user, userProfileData);
+        } catch (error) {
+            setShouldFollow(false);
+            console.error('Error unfollowing user:', error);
+        }
     };
 
     const renderFollowersTab = () => {
-        console.log("Followers")
         setActiveTab('followers');
+    }
+
+    const renderFollowingTab = () => {
+        setActiveTab('following');
     }
 
     useEffect(() => {
         const fetchDataForUser = async () => {
             try {
-                setIsLoading(false);
+                setIsLoading(true);
                 setFormValues({
                     company: userProfileData?.experience?.current?.company || '',
                     location: userProfileData?.experience?.current?.location || '',
                     website: userProfileData?.website || '',
                     bio: userProfileData?.bio || '',
                 });
+                setIsLoading(false);
             } catch (error) {
                 console.error('Error retrieving user data:', error);
                 setIsLoading(false);
             }
         };
         if (user) {
-            setIsLoading(true);
             fetchDataForUser();
-            if (!isAuthUserProfile && userProfileData?.followers) {
-                setShouldFollow(!userProfileData?.followers[user?.uid]);
+            setIsLoading(false);
+            if (!isAuthUserProfile && primaryUserData?.following) {
+                setShouldFollow(!primaryUserData?.following[userProfileData?.userId]);
             } else {
                 setShouldFollow(true);
             }
@@ -148,7 +175,7 @@ const UserProfileInfo: React.FC<any> = ({ user, userProfileData, isAuthUserProfi
                                 </div>
                             </div>
                             <div className="following-container">
-                                <div className="user-stats">
+                                <div className="user-stats" onClick={renderFollowingTab}>
                                     <span className="count">{userProfileData?.followingCount || 0}</span>
                                     <span className="label">Following</span>
                                 </div>
@@ -160,15 +187,24 @@ const UserProfileInfo: React.FC<any> = ({ user, userProfileData, isAuthUserProfi
                             </button>
                         ) : (
                                 <div className="public-profile-btns-container">
-                                    <button 
-                                        className={
-                                            `profile-btn follow-btn ${shouldFollow ? 'follow' : 'unfollow'}`
-                                        } 
-                                        onClick={handleFollow}
-                                    >
-                                        <FaUserPlus className="button-icon" size={16}/>
-                                        {shouldFollow ? 'Follow' : 'Unfollow'}
-                                    </button>
+                                    {shouldFollow ? (
+                                        <button
+                                            className="profile-btn follow-btn follow"
+                                            onClick={handleFollow}
+                                        >
+                                            <FaUserPlus className="button-icon" size={16} />
+                                            Follow
+                                        </button>
+                                    ) : (
+                                            <button
+                                                className="profile-btn follow-btn unfollow"
+                                                onClick={handleUnfollow}
+                                            >
+                                                <FaUserPlus className="button-icon" size={16} />
+                                                Unfollow
+                                            </button>
+                                    )}
+                                   
                                     <button className="profile-btn vouch-btn" onClick={handleFollow}>
                                         <ThumbsUp className="button-icon" size={16} />
                                         

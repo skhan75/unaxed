@@ -7,12 +7,12 @@ import {
     sendPasswordResetEmail,
     signOut,
  } from "firebase/auth";
-import { User } from "firebase/auth";
+import { User, updateProfile } from "firebase/auth";
 
 // Create the AuthContext
 interface AuthContextType {
     user: User | null;
-    signup: (email: string, password: string) => Promise<User | null>;
+    signup: (email: string, password: string, username: string) => Promise<User | null>;
     login: (email: string, password: string) => Promise<User | null>;
     resetPassword: (email: string) => Promise<void>;
     logout: () => Promise<void>;
@@ -33,8 +33,15 @@ export const AuthProvider: React.FC<any> = ({ children }) => {
     const [user, setUser] = useState<User | null>(null);
     const [loading, setLoading] = useState(true)
 
-    const signup = async (email: string, password: string) => {
+    const signup = async (email: string, password: string, username: string) => {
         const response = await createUserWithEmailAndPassword(auth, email, password);
+        // Get the newly created user object
+        const user = response.user;
+
+        // Set the username in the user's profile
+        await updateProfile(user, {
+            displayName: username
+        });
         return response.user;
     };
 

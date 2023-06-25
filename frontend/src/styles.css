@@ -114,9 +114,18 @@ button:disabled {
 
 .profile-page-container {
     display: flex;
+    /* margin-left: 20%;
+    margin-right: 20%; */
+    /* width: 100%; */
     /* padding: var(--page-padding); */
-    align-items: center;
+    /* align-items: center; */
     justify-content: center;
+}
+
+.profile-page-sub-container {
+    display: flex;
+    width: 2000px;
+
 }
 
 .column {
@@ -131,7 +140,7 @@ button:disabled {
 }
 
 .slim {
-    width: 400px;
+    width: 600px;
     max-width: 400px;
     min-width: 400px;
     padding: 20px;
@@ -139,9 +148,33 @@ button:disabled {
 }
 
 .wide {
-    width: 80%;
+    width: 100%;
     padding: 20px;
-    /* border: 1px solid #ccc; */
+    display: flex;
+    flex-direction: row;
+}
+
+.user-profile-col-1 {
+    width: 80%;
+}
+
+.user-profile-col-2 {
+    border: #000000d6 1px solid;
+    width: 20%;
+}
+
+/* Apply styles when the screen width is less than or equal to a certain value */
+@media screen and (max-width: 1400px) {
+    .wide {
+        flex-direction: column;
+        /* Change to a column layout on smaller screens */
+    }
+
+    .user-profile-col-1,
+    .user-profile-col-2 {
+        width: 100%;
+        /* Make both columns take up the full width on smaller screens */
+    }
 }
 
 .profile-info-container {

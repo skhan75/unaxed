@@ -38,9 +38,9 @@ export const Signup: React.FC<any> = (props) => {
                 }
 
                 const username = usernameRef.current.value;
-                const user = await signup(email, password);
+                const user = await signup(email, password, username);
 
-                await setUserData({ username, email }, user);
+                await setUserData({ username, email, userId: user?.uid}, user);
                 navigate('/create-profile');
             }
         } catch (error: any) {

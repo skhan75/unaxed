@@ -3,8 +3,9 @@ import { Binoculars } from '@styled-icons/boxicons-solid';
 import { FolderOpen } from '@styled-icons/fa-regular';
 import { Users } from '@styled-icons/fa-solid';
 import { RemoveRedEye } from '@styled-icons/material';
-import { Verified } from '@styled-icons/material-outlined';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
+import { RiArticleLine } from 'react-icons/ri';
+import { ThumbUp } from '@styled-icons/material';
 
 const UserProfileHeaderTabs: React.FC<any> = ({
     activeTab,
@@ -24,11 +25,13 @@ const UserProfileHeaderTabs: React.FC<any> = ({
 
     const tabs = [
         { id: 'overview', label: 'Overview', show: true, icon: <Binoculars size="18" className="nav-icon" /> },
+        { id: 'posts', label: 'Posts', show: true, icon: <RiArticleLine size={18} className="nav-icon" /> },
         { id: 'projects', label: 'Projects', show: true, icon: <FolderOpen size="18" className="nav-icon" /> },
-        { id: 'vouches', label: 'Vouches', show: true, icon: <Verified size="18" className="nav-icon" /> },
+        { id: 'vouches', label: 'Vouches', show: true, icon: <ThumbUp size="18" className="nav-icon" /> },
         { id: 'collaborations', label: 'Collaborations', show: true, icon: <Users size="18" className="nav-icon" /> },
         { id: 'watchlist', label: 'Watch List', show: true, icon: <RemoveRedEye size={18} className="nav-icon" /> },
-        { id: 'followers', label: 'Followers', show: false, icon: <Users size="18" className="nav-icon" /> },
+        { id: 'followers', label: 'Followers', show: false },
+        { id: 'following', label: 'Following', show: false },
     ];
 
     return (

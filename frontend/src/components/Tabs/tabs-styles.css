@@ -1,0 +1,24 @@
+.tab-with-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 10px;
+    border: none;
+    background: none;
+    color: #333;
+    cursor: pointer;
+    transition: color 0.3s;
+}
+
+.tab-with-icon.active {
+    font-weight: bold;
+    color: #2979ff;
+}
+
+.tab-with-icon:hover {
+    color: #2979ff;
+}
+
+.tab-with-icon__title {
+    margin: 0 5px;
+}

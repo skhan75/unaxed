@@ -13,8 +13,9 @@ export const UserProfile: React.FC<any> = () => {
     const { userData: authUserData } = useUser();
     const { user } = useAuth();
     const [viewProfileData, setViewProfileData] = useState<DocumentData | null>(null);
+    const [viewerId, setViewerId] = useState<string | null>(null); //TODO
     const [loading, setLoading] = React.useState<boolean>(true);
-    const [isAuthUserProfile, setIsAuthserProfile] = React.useState<boolean>(true);
+    const [isAuthUserProfile, setIsAuthUserProfile] = React.useState<boolean>(true);
     const [activeTab, setActiveTab] = useState('overview');
     const navigate = useNavigate();
 
@@ -22,14 +23,15 @@ export const UserProfile: React.FC<any> = () => {
         const fetchUserProfile = async () => {
             setLoading(true);
             if (username && username !== authUserData?.username) {
-                setViewProfileData(await getDataForUserByUsername(username) || null);
+                const data = await getDataForUserByUsername(username);
+                setViewProfileData(data || null);
             } else {
                 setViewProfileData(authUserData || null);
             }
             setLoading(false);
         }
         if (username !== authUserData?.username) {
-            setIsAuthserProfile(false);
+            setIsAuthUserProfile(false);
         }
         fetchUserProfile();
     }, [username, authUserData]);
@@ -43,29 +45,38 @@ export const UserProfile: React.FC<any> = () => {
         <>  
             {!loading && (
                 <div className="profile-page-container">
-                    <div className="column slim">
-                        <UserProfileInfo 
-                            user={user}
-                            userProfileData={viewProfileData} 
-                            isAuthUserProfile={isAuthUserProfile} 
-                            setActiveTab={handleTabChange}
-                        />
-                    </div>
-                    <div className="column wide">
-                        <div className="user-profile-content">
-                            <UserProfileHeaderTabs
-                                isAuthUserProfile={isAuthUserProfile}
-                                activeTab={activeTab}
-                                setActiveTab={setActiveTab}
-                                handleTabChange={handleTabChange}
-                            />
-                            <UserProfileContent
+                    <div className="profile-page-sub-container">
+                        <div className="column slim">
+                            <UserProfileInfo
                                 user={user}
                                 userProfileData={viewProfileData}
-                                activeTab={activeTab}
+                                setUserProfileData={setViewProfileData}
+                                isAuthUserProfile={isAuthUserProfile}
+                                setActiveTab={handleTabChange}
                             />
                         </div>
+                        <div className="column wide">
+                            <div className="user-profile-col-1">
+                                <div className="user-profile-content">
+                                    <UserProfileHeaderTabs
+                                        isAuthUserProfile={isAuthUserProfile}
+                                        activeTab={activeTab}
+                                        setActiveTab={setActiveTab}
+                                        handleTabChange={handleTabChange}
+                                    />
+                                    <UserProfileContent
+                                        user={user}
+                                        userProfileData={viewProfileData}
+                                        activeTab={activeTab}
+                                    />
+                                </div>
+                            </div>
+                            <div className="user-profile-col-2">
+
+                            </div>
+                        </div>
                     </div>
+                    
                 </div>
             )}  
         </>

@@ -1,5 +1,5 @@
 import React, { createContext, useState, useEffect, useContext } from 'react';
-import { getDataForUser, getFollowers, getFollowing } from '../firebase';
+import { getDataForUser, getFollowers, getFollowing, updateUserData } from '../firebase';
 import { useAuth } from "../contexts/AuthContext";
 import { DocumentData } from 'firebase/firestore';
 
@@ -26,7 +26,7 @@ export const UserProvider: React.FC<any> = ({ children }) => {
 
     // Fetch user data here one time for all childs
     useEffect(() => {
-        const fetchUserData = async () => {
+        const fetchAndUpdateUserData = async () => {
             try {
                 setLoading(true);
                 const userData = await getDataForUser(user);
@@ -34,22 +34,21 @@ export const UserProvider: React.FC<any> = ({ children }) => {
                 const followingData = await getFollowing(user);
                 const updatedUserData = {
                     ...userData,
+                    fullName: userData?.firstName + ' ' + userData?.lastName,
                     followers: followersData || {},
                     followersCount: followersData ? Object.keys(followersData).length : 0,
                     following: followingData || {},
                     followingCount: followingData ? Object.keys(followingData).length : 0,
                 };
-
-                console.log('updatedUserData:', updatedUserData)
                 setUserData(updatedUserData || null);
+                await updateUserData(updatedUserData, user);
                 setLoading(false);
             } catch (error) {
                 console.error('Error retrieving user data:', error);
                 setLoading(false);
             }
         };
-
-        fetchUserData();
+        fetchAndUpdateUserData();
     }, []);
 
     const userContextValue: UserContextType = {
