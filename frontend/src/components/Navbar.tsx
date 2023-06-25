@@ -11,7 +11,6 @@ export const Navbar: React.FC<{}> = (props) => {
     const { userData } = useUser();
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
-    console.log('userData', userData?.username)
     const handleAvatarClick = () => {
         setIsDropdownOpen((prevState) => !prevState);
     };

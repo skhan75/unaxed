@@ -44,6 +44,19 @@ export const getFollowing = async (user: User|null) => {
   }
 }
 
+export const getFollowingByUserId = async (userId:string) => {
+  try {
+    const sourceUserDocRef = doc(followingCollection, userId);
+    const docSnap = await getDoc(sourceUserDocRef);
+    if (docSnap.exists()) {
+      return docSnap.data();
+    }
+    console.log("No such document!");
+  } catch (e) {
+    console.error("Error adding document: ", e);
+  }
+}
+
 export const getFollowers = async (user: User|null) => {
   try {
     const sourceUserDocRef = doc(followersCollection, user?.uid);
@@ -56,6 +69,20 @@ export const getFollowers = async (user: User|null) => {
     console.error("Error adding document: ", e);
   }
 }
+
+export const getFollowersByUserId = async (userId:string) => {
+  try {
+    const sourceUserDocRef = doc(followersCollection, userId);
+    const docSnap = await getDoc(sourceUserDocRef);
+    if (docSnap.exists()) {
+      return docSnap.data();
+    }
+    console.log("No such document!");
+  } catch (e) {
+    console.error("Error adding document: ", e);
+  }
+}
+
 
 /**
  * Source user is the user who is following the destination user
@@ -251,7 +278,6 @@ export const createDataForNewUser = async (collectionName: string, newUserData: 
 
 export const setUserData = async (newUserData: any, user: User | null) => {
   try {
-    console.log("Updating user data");
     const userDocRef = doc(usersCollection, user?.uid);
     await setDoc(userDocRef, { ...newUserData });
     console.log('Document successfully added!');
@@ -262,7 +288,6 @@ export const setUserData = async (newUserData: any, user: User | null) => {
 
 export const updateUserData = async (newUserData: any, user: User|null) => {
   try {
-    console.log("Updating user data");
     const userDocRef = doc(usersCollection, user?.uid);
     await updateDoc(userDocRef, {...newUserData});
     console.log('Document successfully updated!');

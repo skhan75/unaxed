@@ -13,7 +13,7 @@ export const UserProfile: React.FC<any> = () => {
     const { userData: authUserData } = useUser();
     const { user } = useAuth();
     const [viewProfileData, setViewProfileData] = useState<DocumentData | null>(null);
-    const [viewerId, setViewerId] = useState<string | null>(null); //TODO
+    const [viewingProfileId, setViewingProfileId] = useState<string | null | undefined>(null); //TODO
     const [loading, setLoading] = React.useState<boolean>(true);
     const [isAuthUserProfile, setIsAuthUserProfile] = React.useState<boolean>(true);
     const [activeTab, setActiveTab] = useState('overview');
@@ -23,15 +23,15 @@ export const UserProfile: React.FC<any> = () => {
         const fetchUserProfile = async () => {
             setLoading(true);
             if (username && username !== authUserData?.username) {
+                setIsAuthUserProfile(false);
                 const data = await getDataForUserByUsername(username);
+                setViewingProfileId(data?.userId);
                 setViewProfileData(data || null);
             } else {
                 setViewProfileData(authUserData || null);
+                setViewingProfileId(user?.uid);
             }
             setLoading(false);
-        }
-        if (username !== authUserData?.username) {
-            setIsAuthUserProfile(false);
         }
         fetchUserProfile();
     }, [username, authUserData]);
@@ -50,6 +50,7 @@ export const UserProfile: React.FC<any> = () => {
                             <UserProfileInfo
                                 user={user}
                                 userProfileData={viewProfileData}
+                                viewingProfileId={viewingProfileId}
                                 setUserProfileData={setViewProfileData}
                                 isAuthUserProfile={isAuthUserProfile}
                                 setActiveTab={handleTabChange}
