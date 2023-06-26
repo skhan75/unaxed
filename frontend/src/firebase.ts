@@ -92,24 +92,24 @@ export const getFollowersByUserId = async (userId:string) => {
  * @param user 
  * @param userToFollow 
  */
-export const followUser = async (currentUser: User | null, userToFollow: DocumentData | null) => {
-  try {
-    if (!currentUser || !userToFollow) {
-      throw new Error("Invalid user or userToFollow data");
-    }
-    const followingDocRefForPrimaryUser = doc(followingCollection, currentUser?.uid);
-    const followersDocRefForSecondaryUser = doc(followersCollection, userToFollow.userId);
-    // Add user to follow to current user's following list
-    await updateFollowingForPrimaryUser(followingDocRefForPrimaryUser, userToFollow);
-    // Add current user to followed user's followers list
-    await updateFollowersForSecondaryUser(followersDocRefForSecondaryUser, currentUser);
-    console.log("User followed successfully!");
-  } catch (e) {
-    console.error("Error following a user: ", e);
-  }
-}
+// export const followUser = async (currentUser: User | null, userToFollow: DocumentData | null) => {
+//   try {
+//     if (!currentUser || !userToFollow) {
+//       throw new Error("Invalid user or userToFollow data");
+//     }
+//     const followingDocRefForPrimaryUser = doc(followingCollection, currentUser?.uid);
+//     const followersDocRefForSecondaryUser = doc(followersCollection, userToFollow.userId);
+//     // Add user to follow to current user's following list
+//     await updateFollowingForPrimaryUser(followingDocRefForPrimaryUser, userToFollow);
+//     // Add current user to followed user's followers list
+//     await updateFollowersForSecondaryUser(followersDocRefForSecondaryUser, currentUser);
+//     console.log("User followed successfully!");
+//   } catch (e) {
+//     console.error("Error following a user: ", e);
+//   }
+// }
 
-export const followUserEnt = async (currentUserEnt: UserEnt, userToFollowEnt: UserEnt) => {
+export const followUser = async (currentUserEnt: UserEnt, userToFollowEnt: UserEnt) => {
   try {
     if (!currentUserEnt.id || !userToFollowEnt.id) {
       throw new Error("One of the user IDs is invalid");
@@ -124,6 +124,24 @@ export const followUserEnt = async (currentUserEnt: UserEnt, userToFollowEnt: Us
     await updateFollowingForPrimaryUser(followingDocRefForPrimaryUser, userToFollowEnt.data);
     // Add current user to followed user's followers list
     await updateFollowersForSecondaryUser(followersDocRefForSecondaryUser, currentUserEnt);
+    console.log("User followed successfully!");
+  } catch (e) {
+    console.error("Error following a user: ", e);
+  }
+}
+
+export const followUserByUserId = async (userId: string|null|undefined, userIdToFollow: string|null|undefined) => {
+  try {
+    if (!userId || !userIdToFollow) {
+      throw new Error("One of the user IDs is invalid");
+    }
+
+    const followingDocRefForPrimaryUser = doc(followingCollection, userId);
+    const followersDocRefForSecondaryUser = doc(followersCollection, userIdToFollow);
+    // Add user to follow to current user's following list
+    await updateFollowingForPrimaryUser(followingDocRefForPrimaryUser, userIdToFollow);
+    // Add current user to followed user's followers list
+    await updateFollowersForSecondaryUser(followersDocRefForSecondaryUser, userId);
     console.log("User followed successfully!");
   } catch (e) {
     console.error("Error following a user: ", e);
@@ -230,7 +248,7 @@ export const unfollowUser = async (currentUserEnt: UserEnt, userToUnfollowEnt: U
     const followingDocRefForDestination = doc(followingCollection, userId);
 
     // Remove followed user from current user's following list to unfollow
-    await removeFromFollowing(followingDocRefForDestination, userToUnfollowEnt.data);
+    await removeFromFollowing(followingDocRefForDestination, userIdToUnfollowId);
     // Remove current user from unfollowed user's followers list as they unfollowed them
     await removeFromFollowers(followersDocRefForSource, currentUserEnt.id);
 
@@ -240,18 +258,41 @@ export const unfollowUser = async (currentUserEnt: UserEnt, userToUnfollowEnt: U
   }
 }
 
+export const unfollowUserByUserId = async (
+  userId: string|null|undefined, userIdToUnfollow: string|null|undefined
+  ) => {
+  try {
+    if (!userId || !userIdToUnfollow) {
+      throw new Error("One of the user IDs is invalid");
+    }
+    
+    const followersDocRefForSource = doc(followersCollection, userIdToUnfollow);
+    const followingDocRefForDestination = doc(followingCollection, userId);
+
+    
+    // Remove followed user from current user's following list to unfollow
+    await removeFromFollowing(followingDocRefForDestination, userIdToUnfollow);
+    
+    // Remove current user from unfollowed user's followers list as they unfollowed them
+    await removeFromFollowers(followersDocRefForSource, userId);
+
+    console.log("Follower removed successfully!");
+  } catch (e) {
+    console.error("Error removing follower: ", e);
+  }
+}
+
 const removeFromFollowing = async (
   followingDocRef: DocumentReference<DocumentData>,
-  destinationUserData: DocumentData | null
+  userIdToUnfollow: string|null|undefined
 ) => {
   const docSnap = await getDoc(followingDocRef);
   const following = docSnap.data();
-  const userToUnfollowId = destinationUserData?.userId;
-
-  if(userToUnfollowId) {
+  
+  if (userIdToUnfollow) {
     if (docSnap.exists()) {
       if (following) {
-        await updateDoc(followingDocRef, { [userToUnfollowId]: deleteField() });
+        await updateDoc(followingDocRef, { [userIdToUnfollow]: deleteField() });
       } else {
         // Logically this block should never be executed
         console.log("The user doesn't follow anyone");
@@ -324,6 +365,25 @@ export const updateUserData = async (newUserData: any, user: User|null) => {
     console.log('Document successfully updated!');
   } catch (e) {
     console.error("Error updating document: ", e);
+  }
+}
+
+export const getUserEntByUserId = async (userId: string): Promise<UserEnt | null> => {
+  try {
+    const usersDocRef = doc(db, "users", userId);
+    const docSnap = await getDoc(usersDocRef);
+    if (docSnap.exists()) {
+      return {
+        id: userId,
+        data: docSnap.data()
+      };
+    } else {
+      console.log("No such document!");
+      return null;
+    }
+  } catch (e) {
+    console.error("Error adding document: ", e);
+    return null;
   }
 }
 

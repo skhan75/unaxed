@@ -12,8 +12,7 @@ export const UserProfile: React.FC<any> = () => {
     const { username } = useParams();
     const { 
         userData: authUserData, 
-        setViewedEntityData, 
-        viewedEntityData, 
+        setViewedEntityData,  
         viewedEntity, 
         primaryEntity, 
         setViewedEntity, 
@@ -21,10 +20,8 @@ export const UserProfile: React.FC<any> = () => {
     } = useUser();
     const { user } = useAuth();
     const [loading, setLoading] = React.useState<boolean>(true);
-    const [isAuthUserProfile, setIsAuthUserProfile] = React.useState<boolean>(true);
     const [activeTab, setActiveTab] = useState('overview');
     const navigate = useNavigate();
-
 
     useEffect(() => {
         const fetchUserProfile = async () => {
@@ -33,7 +30,6 @@ export const UserProfile: React.FC<any> = () => {
                 throw new Error('User not found');
             }
             if (username && username !== authUserData?.username) {
-                setIsAuthUserProfile(false);
                 const data = await getDataForUserByUsername(username);
                 if(!data) {
                     throw new Error('User Data not found for username: ' + username);
@@ -43,18 +39,15 @@ export const UserProfile: React.FC<any> = () => {
                     data: data,
                 }
                 setViewedEntity(viewedEntity || null);
-                setViewedEntityData(data || null);
             } else {
                 const primaryEntity = {
                     id: user?.uid,
                     data: authUserData,
                 };
                 setViewedEntity(primaryEntity || null);
-                setViewedEntityData(authUserData || null);
             }
             setLoading(false);
         };
-
         fetchUserProfile();
     }, [username, authUserData, user, setViewedEntityData]);
 
@@ -75,8 +68,6 @@ export const UserProfile: React.FC<any> = () => {
                                 primaryEntity={primaryEntity}
                                 setViewedEntity={setViewedEntity}
                                 setPrimaryEntity={setPrimaryEntity}
-                                setUserProfileData={setViewedEntityData}
-                                isAuthUserProfile={isAuthUserProfile}
                                 setActiveTab={handleTabChange}
                             />
                         </div>
@@ -84,7 +75,6 @@ export const UserProfile: React.FC<any> = () => {
                             <div className="user-profile-col-1">
                                 <div className="user-profile-content">
                                     <UserProfileHeaderTabs
-                                        isAuthUserProfile={isAuthUserProfile}
                                         activeTab={activeTab}
                                         setActiveTab={setActiveTab}
                                         handleTabChange={handleTabChange}
@@ -96,6 +86,7 @@ export const UserProfile: React.FC<any> = () => {
                                 </div>
                             </div>
                             <div className="user-profile-col-2">
+                                {/* TODO */}
                             </div>
                         </div>
                     </div>

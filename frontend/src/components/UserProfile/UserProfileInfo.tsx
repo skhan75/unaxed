@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { followUser, followUserEnt, getDataForUserByUserId, getFollowersByUserId, getFollowingByUserId, unfollowUser, updateUserData, uploadProfileImage } from '../../firebase';
+import { followUser, getDataForUserByUserId, getFollowersByUserId, getFollowingByUserId, unfollowUser, updateUserData, uploadProfileImage } from '../../firebase';
 import { FaBuilding, FaMapMarkerAlt, FaLink, FaCalendarAlt, FaEnvelope, FaHandHoldingHeart, FaUserPlus } from 'react-icons/fa';
 import UserAvatar from '../UserAvatar';
 import JustText from '../JustText';
@@ -15,7 +15,6 @@ const UserProfileInfo: React.FC<any> = ({
     primaryEntity,
     setViewedEntity,
     setPrimaryEntity,
-    userProfileData, 
     setActiveTab, 
 }) => {
     const [isLoading, setIsLoading] = useState(true);
@@ -36,9 +35,6 @@ const UserProfileInfo: React.FC<any> = ({
     const [ primaryEntFollowingData, setPrimaryEntFollowingData ] = useState<DocumentData | null>(null);
     const [ viewedEntFollowersData, setViewedEntFollowersData ] = useState<DocumentData | null>(null);
     const [ viewedEntFollowingData, setViewedEntFollowingData ] = useState<DocumentData | null>(null);
-
-
-    const { userData: primaryUserData } = useUser();
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         const { name, value } = e.target;
@@ -100,9 +96,7 @@ const UserProfileInfo: React.FC<any> = ({
     const handleFollow = async() => {
         try {
             setShouldFollow(false);
-            // await followUser(user, userProfileData);
-            await followUserEnt(primaryEntity, viewedEntity);
-
+            await followUser(primaryEntity, viewedEntity);
         } catch (error) {
             setShouldFollow(true);
             console.error('Error following user:', error);
@@ -154,7 +148,6 @@ const UserProfileInfo: React.FC<any> = ({
                         // i.e viewed profile is a public profile
                         const doesPrimaryUserFollowViewingProfile = !primaryEntFollowingData[basicInfoData?.userId];
                         setShouldFollow(doesPrimaryUserFollowViewingProfile);
-                        setFollowingCount(Object.keys(primaryEntFollowingData).length);
                     }
                 } 
                 
@@ -162,6 +155,7 @@ const UserProfileInfo: React.FC<any> = ({
                     getFollowersByUserId(viewedEntity?.id),
                     getFollowingByUserId(viewedEntity?.id),
                 ]);
+
                 setViewedEntFollowersData(viewedEntFollowersData || null);
                 setViewedEntFollowingData(viewedEntFollowingData || null);
 
@@ -180,7 +174,7 @@ const UserProfileInfo: React.FC<any> = ({
                     website: basicInfoData?.website || '',
                     bio: basicInfoData?.bio || '',
                 });
-                
+
                 setIsLoading(false);
             } catch (error) {
                 console.error('Error retrieving user data:', error);
@@ -191,6 +185,8 @@ const UserProfileInfo: React.FC<any> = ({
             fetchDataForEntities();
         }
     }, [viewedEntity, primaryEntity]);
+
+
     return (
         <>
             {!isLoading && (
