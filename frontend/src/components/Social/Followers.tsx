@@ -11,7 +11,6 @@ interface Follower {
     name: string;
 }
 
-
 const Followers: React.FC = () => {
     const { userData:primaryUserData } = useUser();
     const { user } = useAuth();

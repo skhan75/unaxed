@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { followUser, getDataForUserByUserId, getFollowersByUserId, getFollowingByUserId, unfollowUser, updateUserData, uploadProfileImage } from '../../firebase';
+import { followUser, followUserEnt, getDataForUserByUserId, getFollowersByUserId, getFollowingByUserId, unfollowUser, updateUserData, uploadProfileImage } from '../../firebase';
 import { FaBuilding, FaMapMarkerAlt, FaLink, FaCalendarAlt, FaEnvelope, FaHandHoldingHeart, FaUserPlus } from 'react-icons/fa';
 import UserAvatar from '../UserAvatar';
 import JustText from '../JustText';
@@ -11,27 +11,33 @@ import { DocumentData } from 'firebase/firestore';
 
 const UserProfileInfo: React.FC<any> = ({ 
     user, 
+    viewedEntity,
+    primaryEntity,
+    setViewedEntity,
+    setPrimaryEntity,
     userProfileData, 
-    isAuthUserProfile, 
     setActiveTab, 
-    setUserProfileData,
-    viewingProfileId,
 }) => {
     const [isLoading, setIsLoading] = useState(true);
     const [editMode, setEditMode] = useState(false);
     const [imageFile, setImageFile] = useState<File | null>(null);
     const [formValues, setFormValues] = useState({
-        company: userProfileData?.experience?.current?.company || '',
-        location: userProfileData?.experience?.current?.location || '',
-        website: userProfileData?.website || '',
-        bio: userProfileData?.bio || '',
+        company: viewedEntity?.data.experience?.current?.company || '',
+        location: viewedEntity?.data.current?.location || '',
+        website: viewedEntity?.data.website || '',
+        bio: viewedEntity?.data.bio || '',
     });
     const [ shouldFollow, setShouldFollow ] = useState<boolean>(true);
+    const [ isPrimaryAndViewedEntitySame, setIsPrimaryAndViewedEntitySame ] = useState<boolean>(false);
     const [ basicInfoData, setBasicInfoData ] = useState<DocumentData | null>(null);
-    const [ followersData, setFollowersData ] = useState<DocumentData | null>(null);
-    const [ followingData, setFollowingData ] = useState<DocumentData | null>(null);
     const [ followersCount, setFollowersCount] = useState<number>(0);
     const [ followingCount, setFollowingCount ] = useState<number>(0);
+    const [ primaryEntFollowersData, setPrimaryEntFollowersData ] = useState<DocumentData | null>(null);
+    const [ primaryEntFollowingData, setPrimaryEntFollowingData ] = useState<DocumentData | null>(null);
+    const [ viewedEntFollowersData, setViewedEntFollowersData ] = useState<DocumentData | null>(null);
+    const [ viewedEntFollowingData, setViewedEntFollowingData ] = useState<DocumentData | null>(null);
+
+
     const { userData: primaryUserData } = useUser();
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -76,16 +82,27 @@ const UserProfileInfo: React.FC<any> = ({
         }
         await updateUserData(updatedData, user);
         setEditMode(false);
-        setUserProfileData(prevData => ({
-            ...prevData,
-            bio: formValues.bio,
-        }));
+
+        const updatedViewedEntity = {
+            id: viewedEntity?.id,
+            data: {
+                ...viewedEntity?.data,
+                bio: formValues.bio,
+                company: formValues.company,
+                location: formValues.location,
+                website: formValues.website,
+            },
+        };
+
+        setViewedEntity(updatedViewedEntity);
     };
 
     const handleFollow = async() => {
         try {
             setShouldFollow(false);
-            await followUser(user, userProfileData);
+            // await followUser(user, userProfileData);
+            await followUserEnt(primaryEntity, viewedEntity);
+
         } catch (error) {
             setShouldFollow(true);
             console.error('Error following user:', error);
@@ -95,7 +112,7 @@ const UserProfileInfo: React.FC<any> = ({
     const handleUnfollow = async() => {
         try {
             setShouldFollow(true);
-            await unfollowUser(user, userProfileData);
+            await unfollowUser(primaryEntity, viewedEntity);
         } catch (error) {
             setShouldFollow(false);
             console.error('Error unfollowing user:', error);
@@ -111,47 +128,69 @@ const UserProfileInfo: React.FC<any> = ({
     }
 
     useEffect(() => {
-        const fetchDataForViewedProfile = async () => {
+        const fetchDataForEntities = async () => {
             try {
+                const isPrimaryAndViewedEntitySame = primaryEntity?.id === viewedEntity?.id;
                 setIsLoading(true);
-                const basicInfoData = await getDataForUserByUserId(viewingProfileId);
-                const followersData = await getFollowersByUserId(viewingProfileId);
-                const followingData = await getFollowingByUserId(viewingProfileId);
-
-                if (followersData) {
-                    setFollowersCount(Object.keys(followersData).length);
-                }
-
-                if (followingData) {
-                    setFollowingCount (Object.keys(followingData).length);
-                }
+                setIsPrimaryAndViewedEntitySame(isPrimaryAndViewedEntitySame);
                 
-                setBasicInfoData(basicInfoData || null);
-                setFollowersData(followersData || null);
-                setFollowingData(followingData || null);
+                // Basic Info matters only for the currently viewed profile
+                const basicInfoData = viewedEntity?.data;
 
+                if(!isPrimaryAndViewedEntitySame) {
+                    const [ primaryEntFollowersData, primaryEntFollowingData ] = await Promise.all([
+                        getFollowersByUserId(primaryEntity?.id),
+                        getFollowingByUserId(primaryEntity?.id),
+                    ]);
+                    setPrimaryEntFollowersData(primaryEntFollowersData || null);
+                    setPrimaryEntFollowingData(primaryEntFollowingData || null);
+
+                    if (primaryEntFollowersData) {
+                        setFollowersCount(Object.keys(primaryEntFollowersData).length);
+                    }
+
+                    if (primaryEntFollowingData) {
+                        // Check if the viewed profile is not auth/primary user's profile 
+                        // i.e viewed profile is a public profile
+                        const doesPrimaryUserFollowViewingProfile = !primaryEntFollowingData[basicInfoData?.userId];
+                        setShouldFollow(doesPrimaryUserFollowViewingProfile);
+                        setFollowingCount(Object.keys(primaryEntFollowingData).length);
+                    }
+                } 
+                
+                const [viewedEntFollowersData, viewedEntFollowingData] = await Promise.all([
+                    getFollowersByUserId(viewedEntity?.id),
+                    getFollowingByUserId(viewedEntity?.id),
+                ]);
+                setViewedEntFollowersData(viewedEntFollowersData || null);
+                setViewedEntFollowingData(viewedEntFollowingData || null);
+
+                if (viewedEntFollowersData) {
+                    setFollowersCount(Object.keys(viewedEntFollowersData).length);
+                }
+
+                if (viewedEntFollowingData) {
+                    setFollowingCount(Object.keys(viewedEntFollowingData).length);
+                }
+       
+                setBasicInfoData(basicInfoData || null);
                 setFormValues({
                     company: basicInfoData?.experience?.current?.company || '',
                     location: basicInfoData?.experience?.current?.location || '',
                     website: basicInfoData?.website || '',
                     bio: basicInfoData?.bio || '',
                 });
-                // Check if the viewed profile is not auth/primary user's profile 
-                // i.e viewed profile is a public profile
-                if (!isAuthUserProfile && primaryUserData?.following) {
-                    const doesPrimaryUserFollowViewingProfile = !primaryUserData?.following[basicInfoData?.userId];
-                    setShouldFollow(doesPrimaryUserFollowViewingProfile);
-                }
+                
                 setIsLoading(false);
             } catch (error) {
                 console.error('Error retrieving user data:', error);
                 setIsLoading(false);
             }
         };
-        if (user) {
-            fetchDataForViewedProfile();
+        if (viewedEntity && primaryEntity) {
+            fetchDataForEntities();
         }
-    }, [user]);
+    }, [viewedEntity, primaryEntity]);
     return (
         <>
             {!isLoading && (
@@ -166,7 +205,7 @@ const UserProfileInfo: React.FC<any> = ({
                         />
                     </div>
                     <div className="info-top">
-                        {(editMode && isAuthUserProfile) && (
+                        {(editMode && isPrimaryAndViewedEntitySame) && (
                             <div className="image-upload">
                                 <input type="file" accept="image/*" onChange={handleImageUpload} />
                             </div>
@@ -174,7 +213,7 @@ const UserProfileInfo: React.FC<any> = ({
                         <div className="profile-info">
                             <div className="name">{`${basicInfoData?.firstName} ${basicInfoData?.lastName}`}</div>
                             <div className="username">{`@${basicInfoData?.username}`}</div>
-                            {(editMode && isAuthUserProfile) ? (
+                            {(editMode && isPrimaryAndViewedEntitySame) ? (
                                 <textarea
                                     name="bio"
                                     value={formValues.bio}
@@ -208,7 +247,7 @@ const UserProfileInfo: React.FC<any> = ({
                                 </div>
                             </div>
                         </div>
-                        {isAuthUserProfile ? (
+                        {isPrimaryAndViewedEntitySame ? (
                             <button className="profile-btn edit-btn" onClick={handleEditProfile}>
                                 Edit Profile
                             </button>

@@ -6,7 +6,6 @@ import React from 'react';
 // }
 
 const Overview: React.FC<any> = () => {
-    console.log("Overview Content");
     return (
         <div>
             <h1>Overview Content</h1>

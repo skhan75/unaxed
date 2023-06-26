@@ -11,6 +11,7 @@ import {
 import { 
   getStorage, ref, uploadBytes, getDownloadURL 
 } from "firebase/storage";
+import { UserEnt } from './interfaces/UserEnt';
 
 const firebaseConfig = {
   apiKey: process.env.REACT_APP_API_KEY,
@@ -108,51 +109,76 @@ export const followUser = async (currentUser: User | null, userToFollow: Documen
   }
 }
 
-const updateFollowersForSecondaryUser = async (
-  followersDocRef: DocumentReference<DocumentData>, 
-  sourceUserData: User | DocumentData | null
-) => {
-  const docSnap = await getDoc(followersDocRef);
-  const followers = docSnap.data();
-  const followerUserId = sourceUserData?.uid;
-  const followerUsername = sourceUserData?.displayName || sourceUserData?.displayName || "";
-  const followerImageUrl = sourceUserData?.photoURL || "";
-
-  if(docSnap.exists()) {
-    if(followerUserId) {
-      const newFollowerObj = {
-        [followerUserId]: {
-          username: followerUsername,
-          profileImageUrl: followerImageUrl
-        }
-      };
-
-      if (followers) {
-        const newFollowersList = {
-          ...followers,
-          ...newFollowerObj
-        };
-        await updateDoc(followersDocRef, newFollowersList);
-      } else {
-        await setDoc(followersDocRef, { [sourceUserData?.uid]: sourceUserData?.displayName });
-      }
-
-    } else {
-      throw new Error("Unable to add user to follower list Invalid followerUserId");
+export const followUserEnt = async (currentUserEnt: UserEnt, userToFollowEnt: UserEnt) => {
+  try {
+    if (!currentUserEnt.id || !userToFollowEnt.id) {
+      throw new Error("One of the user IDs is invalid");
     }
-  } else {
-    if(followerUserId) {
-      await setDoc(followersDocRef, {
-        [followerUserId]: {
-          username: followerUsername,
-          profileImageUrl: followerImageUrl
-        }
-      });
-    } else {
-      throw new Error("Unable to add user to follower list Invalid followerUserId");
-    }
+
+    const userId = currentUserEnt.id;
+    const userToFollowId = userToFollowEnt.id;
+
+    const followingDocRefForPrimaryUser = doc(followingCollection, userId);
+    const followersDocRefForSecondaryUser = doc(followersCollection, userToFollowId);
+    // Add user to follow to current user's following list
+    await updateFollowingForPrimaryUser(followingDocRefForPrimaryUser, userToFollowEnt.data);
+    // Add current user to followed user's followers list
+    await updateFollowersForSecondaryUser(followersDocRefForSecondaryUser, currentUserEnt);
+    console.log("User followed successfully!");
+  } catch (e) {
+    console.error("Error following a user: ", e);
   }
 }
+
+const updateFollowersForSecondaryUser = async (
+  followersDocRef: DocumentReference<DocumentData>,
+  userEnt: UserEnt | null
+): Promise<void> => {
+  try {
+    const docSnap = await getDoc(followersDocRef);
+    const followers = docSnap.data();
+    const followerUserId = userEnt?.id;
+    const followerUsername = userEnt?.data.username;
+    const followerImageUrl = userEnt?.data.profileImageUrl || "";
+
+    if (docSnap.exists()) {
+      if (followerUserId) {
+        const newFollowerObj = {
+          [followerUserId]: {
+            username: followerUsername,
+            profileImageUrl: followerImageUrl,
+          },
+        };
+
+        const newFollowersList = followers
+          ? {
+            ...followers,
+            ...newFollowerObj,
+          }
+          : { ...newFollowerObj };
+
+        await updateDoc(followersDocRef, newFollowersList);
+      } else {
+        throw new Error("Unable to add user to follower list: Invalid followerUserId");
+      }
+    } else { // Create a new document for the user
+      if (followerUserId) {
+        await setDoc(followersDocRef, {
+          [followerUserId]: {
+            username: followerUsername,
+            profileImageUrl: followerImageUrl,
+          },
+        });
+      } else {
+        throw new Error("Unable to add user to follower list: Invalid followerUserId");
+      }
+    }
+  } catch (error) {
+    console.error("Error updating followers for secondary user:", error);
+    throw error;
+  }
+};
+
 
 const updateFollowingForPrimaryUser = async (
   followingDocRef: DocumentReference<DocumentData>, 
@@ -191,18 +217,22 @@ const updateFollowingForPrimaryUser = async (
   }
 }
 
-export const unfollowUser = async (user: User | null, userToUnfollow: DocumentData | null) => {
+export const unfollowUser = async (currentUserEnt: UserEnt, userToUnfollowEnt: UserEnt) => {
   try {
-    if (!user || !userToUnfollow) {
-      throw new Error("Invalid user or userToUnfollow data");
+    if (!currentUserEnt.id || !userToUnfollowEnt.id) {
+      throw new Error("One of the user IDs is invalid");
     }
-    const followersDocRefForSource = doc(followersCollection, userToUnfollow.userId);
-    const followingDocRefForDestination = doc(followingCollection, user?.uid);
+    
+    const userId = currentUserEnt.id;
+    const userIdToUnfollowId = userToUnfollowEnt.id;
+    
+    const followersDocRefForSource = doc(followersCollection, userIdToUnfollowId);
+    const followingDocRefForDestination = doc(followingCollection, userId);
 
     // Remove followed user from current user's following list to unfollow
-    await removeFromFollowing(followingDocRefForDestination, userToUnfollow);
+    await removeFromFollowing(followingDocRefForDestination, userToUnfollowEnt.data);
     // Remove current user from unfollowed user's followers list as they unfollowed them
-    await removeFromFollowers(followersDocRefForSource, user);
+    await removeFromFollowers(followersDocRefForSource, currentUserEnt.id);
 
     console.log("Follower removed successfully!");
   } catch (e) {
@@ -234,16 +264,17 @@ const removeFromFollowing = async (
 
 const removeFromFollowers = async (
   followersDocRef: DocumentReference<DocumentData>,
-  sourceUserData: User | null
+  userIdToUnfollowId: string,
+  // sourceUserData: User | null
 ) => {
   const docSnap = await getDoc(followersDocRef);
   const followers = docSnap.data();
-  const followerUserId = sourceUserData?.uid;
+  // const followerUserId = userIdToUnfollowId;
 
-  if(followerUserId) {
+  if (userIdToUnfollowId) {
     if (docSnap.exists()) {
       if (followers) {
-        await updateDoc(followersDocRef, { [followerUserId]: deleteField() });
+        await updateDoc(followersDocRef, { [userIdToUnfollowId]: deleteField() });
       } else {
         // Logically this block should never be executed 
         console.log("The user doesn't follow anyone");

@@ -10,31 +10,53 @@ import UserProfileHeaderTabs from './UserProfileHeaderTabs';
 
 export const UserProfile: React.FC<any> = () => {
     const { username } = useParams();
-    const { userData: authUserData } = useUser();
+    const { 
+        userData: authUserData, 
+        setViewedEntityData, 
+        viewedEntityData, 
+        viewedEntity, 
+        primaryEntity, 
+        setViewedEntity, 
+        setPrimaryEntity 
+    } = useUser();
     const { user } = useAuth();
-    const [viewProfileData, setViewProfileData] = useState<DocumentData | null>(null);
-    const [viewingProfileId, setViewingProfileId] = useState<string | null | undefined>(null); //TODO
     const [loading, setLoading] = React.useState<boolean>(true);
     const [isAuthUserProfile, setIsAuthUserProfile] = React.useState<boolean>(true);
     const [activeTab, setActiveTab] = useState('overview');
     const navigate = useNavigate();
 
+
     useEffect(() => {
         const fetchUserProfile = async () => {
             setLoading(true);
+            if(!user?.uid) {
+                throw new Error('User not found');
+            }
             if (username && username !== authUserData?.username) {
                 setIsAuthUserProfile(false);
                 const data = await getDataForUserByUsername(username);
-                setViewingProfileId(data?.userId);
-                setViewProfileData(data || null);
+                if(!data) {
+                    throw new Error('User Data not found for username: ' + username);
+                }
+                const viewedEntity = {
+                    id: data?.userId,
+                    data: data,
+                }
+                setViewedEntity(viewedEntity || null);
+                setViewedEntityData(data || null);
             } else {
-                setViewProfileData(authUserData || null);
-                setViewingProfileId(user?.uid);
+                const primaryEntity = {
+                    id: user?.uid,
+                    data: authUserData,
+                };
+                setViewedEntity(primaryEntity || null);
+                setViewedEntityData(authUserData || null);
             }
             setLoading(false);
-        }
+        };
+
         fetchUserProfile();
-    }, [username, authUserData]);
+    }, [username, authUserData, user, setViewedEntityData]);
 
     const handleTabChange = (tabId: string) => {
         setActiveTab(tabId);
@@ -49,9 +71,11 @@ export const UserProfile: React.FC<any> = () => {
                         <div className="column slim">
                             <UserProfileInfo
                                 user={user}
-                                userProfileData={viewProfileData}
-                                viewingProfileId={viewingProfileId}
-                                setUserProfileData={setViewProfileData}
+                                viewedEntity={viewedEntity}
+                                primaryEntity={primaryEntity}
+                                setViewedEntity={setViewedEntity}
+                                setPrimaryEntity={setPrimaryEntity}
+                                setUserProfileData={setViewedEntityData}
                                 isAuthUserProfile={isAuthUserProfile}
                                 setActiveTab={handleTabChange}
                             />
@@ -67,17 +91,14 @@ export const UserProfile: React.FC<any> = () => {
                                     />
                                     <UserProfileContent
                                         user={user}
-                                        userProfileData={viewProfileData}
                                         activeTab={activeTab}
                                     />
                                 </div>
                             </div>
                             <div className="user-profile-col-2">
-
                             </div>
                         </div>
                     </div>
-                    
                 </div>
             )}  
         </>
