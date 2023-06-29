@@ -1,4 +1,5 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 
 interface UserAvatarProps {
     firstName?: string;
@@ -6,6 +7,7 @@ interface UserAvatarProps {
     size: number;
     profileImageUrl?: string;
     className?: string;
+    username?: string; // New prop for the username
 }
 
 const UserAvatar: React.FC<UserAvatarProps> = ({
@@ -14,6 +16,7 @@ const UserAvatar: React.FC<UserAvatarProps> = ({
     size,
     profileImageUrl,
     className,
+    username,
 }) => {
     const getInitials = (firstName: string, lastName: string) => {
         if (!firstName || !lastName) return '';
@@ -38,6 +41,7 @@ const UserAvatar: React.FC<UserAvatarProps> = ({
         fontSize: Math.floor(size / 2.5),
         fontWeight: 'bold',
         color: '#fff',
+        cursor: 'pointer', // Add cursor pointer
     };
 
     const imageStyle: React.CSSProperties = {
@@ -45,8 +49,16 @@ const UserAvatar: React.FC<UserAvatarProps> = ({
         objectFit: 'cover',
     };
 
+    const navigate = useNavigate();
+
+    const handleAvatarClick = () => {
+        if (username) {
+            navigate(`/${username}`);
+        }
+    };
+
     return (
-        <div className={className} style={avatarStyle}>
+        <div className={className} style={avatarStyle} onClick={handleAvatarClick}>
             {profileImageUrl ? (
                 <img
                     className="profile-avatar"

@@ -3,7 +3,6 @@ import { Create } from '@styled-icons/ionicons-outline';
 import { CheckCircle } from '@styled-icons/bootstrap';
 import { Parking } from '@styled-icons/boxicons-solid';
 import ButtonWithIcon from '../Buttons/ButtonWithIcon';
-import { Live } from '@styled-icons/fluentui-system-filled';
 import TabWithIcon from '../Tabs/TabWithIcon';
 import './styles/projects.css';
 import { useLocation, useNavigate } from 'react-router-dom';
@@ -13,19 +12,27 @@ import CreateProject from './CreateProject';
 import { ProjectEnt } from '../../interfaces/ProjectEnt';
 import { Add } from '@styled-icons/fluentui-system-filled';
 import TextBox from '../TextBox';
-import { DocumentData } from 'firebase/firestore';
 import { getUserEntByUserId } from '../../firebase';
 import UserAvatar from '../UserAvatar';
-import { userInfo } from 'os';
+import { useUser } from '../../contexts/UserContext';
+import { useAuth } from '../../contexts/AuthContext';
+import { UserEnt } from '../../interfaces/UserEnt';
 
 
 
 const Projects: React.FC = () => {
+    const {
+        viewedEntity,
+        setViewedEntity,
+        primaryEntity
+    } = useUser();
+    const { user } = useAuth();
     const [currentTab, setCurrentTab] = useState<string>('live');
     const [projects, setProjects] = useState<ProjectEnt[]>([]);
     const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
     const [contributorsData, setContributorsData] = useState<Object>({});
     const [loading, setLoading] = useState<boolean>(true);
+    const [isPrimaryAndViewedEntitySame, setIsPrimaryAndViewedEntitySame] = useState<boolean>(false);
     const [cachedData, setCachedData] = useState<boolean>(false); // Add cachedData state
 
     const navigate = useNavigate();
@@ -51,6 +58,11 @@ const Projects: React.FC = () => {
             if (cachedData) {
                 return;
             }
+
+            // Check if viewed entity is primary or other
+            const isPrimaryAndViewedEntitySame = primaryEntity?.id === viewedEntity?.id;
+            setIsPrimaryAndViewedEntitySame(isPrimaryAndViewedEntitySame);
+
             const newprojects: ProjectEnt[] = [
                 {
                     id: '1',
@@ -151,7 +163,7 @@ const Projects: React.FC = () => {
                         {project.data.contributors.map((contributor) => {
                             const contributorData = contributorsData[contributor];
                             return (
-                                <UserAvatar key={contributorData.username} firstName={contributorData.firstName} lastName={contributorData.lastName} profileImageUrl={contributorData.profileImageUrl} size={42} />
+                                <UserAvatar key={contributorData.username} firstName={contributorData.firstName} lastName={contributorData.lastName} profileImageUrl={contributorData.profileImageUrl} username={contributorData.username} size={42} />
                             )
                         })}
                     </div>
@@ -160,7 +172,7 @@ const Projects: React.FC = () => {
         )
     }
 
-    const renderProjects = () => {
+    const renderProjectsForPrimary = () => {
         const filteredProjects = projects.filter(
             (project) => project.data.status === currentTab
         );
@@ -188,60 +200,64 @@ const Projects: React.FC = () => {
 
             ) : (
                 <>
-                        <div className="projects-header">
-                        </div>
+                    <div className="projects-header">
+                    </div>
 
-                        <div className="projects-tabs">
-                            <ul>
-                                <li>
-                                    <TabWithIcon
-                                        title="Live"
-                                        icon={<LiveDot />}
-                                        iconPosition="left"
-                                        onClick={() => handleTabChange('live')}
-                                        isActive={currentTab === 'live'}
-                                    />
-                                </li>
-                                <li>
-                                    <TabWithIcon
-                                        title="Completed"
-                                        icon={<CheckCircle className="tab-icon" size={18} />}
-                                        iconPosition="left"
-                                        onClick={() => handleTabChange('completed')}
-                                        isActive={currentTab === 'completed'}
-                                    />
-                                </li>
-                                <li>
-                                    <TabWithIcon
-                                        title="Parked"
-                                        icon={<Parking className="tab-icon" size={18} />}
-                                        iconPosition="left"
-                                        onClick={() => handleTabChange('parked')}
-                                        isActive={currentTab === 'parked'}
-                                    />
-                                </li>
-                                <li>
-                                    <ButtonWithIcon
-                                        className="create-project-btn"
-                                        icon={<Add className="project-icon" size={20} />}
-                                        iconPosition="left"
-                                        onClick={startCreate}
-                                    />
-                                </li>
-                            </ul>
-                        </div>
+                    <div className="projects-tabs">
+                        <ul>
+                            <li>
+                                <TabWithIcon
+                                    title="Live"
+                                    icon={<LiveDot />}
+                                    iconPosition="left"
+                                    onClick={() => handleTabChange('live')}
+                                    isActive={currentTab === 'live'}
+                                />
+                            </li>
+                            <li>
+                                <TabWithIcon
+                                    title="Completed"
+                                    icon={<CheckCircle className="tab-icon" size={18} />}
+                                    iconPosition="left"
+                                    onClick={() => handleTabChange('completed')}
+                                    isActive={currentTab === 'completed'}
+                                />
+                            </li>
+                            <li>
+                                <TabWithIcon
+                                    title="Parked"
+                                    icon={<Parking className="tab-icon" size={18} />}
+                                    iconPosition="left"
+                                    onClick={() => handleTabChange('parked')}
+                                    isActive={currentTab === 'parked'}
+                                />
+                            </li>
+                            <li>
+                                <ButtonWithIcon
+                                    className="create-project-btn"
+                                    icon={<Add className="project-icon" size={20} />}
+                                    iconPosition="left"
+                                    onClick={startCreate}
+                                />
+                            </li>
+                        </ul>
+                    </div>
 
-                        <div className="create-project-container">
+                    <div className="create-project-container">
 
-                        </div>
+                    </div>
 
-                        <div className="projects-list">
-                            {renderProjects()}
-                        </div>
+                    {isPrimaryAndViewedEntitySame && (
+                        <>
+                            <div className="projects-list">
+                                {renderProjectsForPrimary()}
+                            </div>
 
-                        <Modal isOpen={isModalOpen} onRequestClose={closeModal}>
-                            <CreateProject onClose={closeModal} setProjects={setProjects} />
-                        </Modal>
+                            <Modal isOpen={isModalOpen} onRequestClose={closeModal}>
+                                <CreateProject onClose={closeModal} setProjects={setProjects} />
+                            </Modal>
+                        </>
+                    )}
                 </>
             )}
             
