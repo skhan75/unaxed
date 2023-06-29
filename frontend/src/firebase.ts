@@ -92,23 +92,6 @@ export const getFollowersByUserId = async (userId:string) => {
  * @param user 
  * @param userToFollow 
  */
-// export const followUser = async (currentUser: User | null, userToFollow: DocumentData | null) => {
-//   try {
-//     if (!currentUser || !userToFollow) {
-//       throw new Error("Invalid user or userToFollow data");
-//     }
-//     const followingDocRefForPrimaryUser = doc(followingCollection, currentUser?.uid);
-//     const followersDocRefForSecondaryUser = doc(followersCollection, userToFollow.userId);
-//     // Add user to follow to current user's following list
-//     await updateFollowingForPrimaryUser(followingDocRefForPrimaryUser, userToFollow);
-//     // Add current user to followed user's followers list
-//     await updateFollowersForSecondaryUser(followersDocRefForSecondaryUser, currentUser);
-//     console.log("User followed successfully!");
-//   } catch (e) {
-//     console.error("Error following a user: ", e);
-//   }
-// }
-
 export const followUser = async (currentUserEnt: UserEnt, userToFollowEnt: UserEnt) => {
   try {
     if (!currentUserEnt.id || !userToFollowEnt.id) {
@@ -269,10 +252,8 @@ export const unfollowUserByUserId = async (
     const followersDocRefForSource = doc(followersCollection, userIdToUnfollow);
     const followingDocRefForDestination = doc(followingCollection, userId);
 
-    
     // Remove followed user from current user's following list to unfollow
-    await removeFromFollowing(followingDocRefForDestination, userIdToUnfollow);
-    
+    await removeFromFollowing(followingDocRefForDestination, userIdToUnfollow);    
     // Remove current user from unfollowed user's followers list as they unfollowed them
     await removeFromFollowers(followersDocRefForSource, userId);
 
@@ -306,11 +287,9 @@ const removeFromFollowing = async (
 const removeFromFollowers = async (
   followersDocRef: DocumentReference<DocumentData>,
   userIdToUnfollowId: string,
-  // sourceUserData: User | null
 ) => {
   const docSnap = await getDoc(followersDocRef);
   const followers = docSnap.data();
-  // const followerUserId = userIdToUnfollowId;
 
   if (userIdToUnfollowId) {
     if (docSnap.exists()) {

@@ -1,28 +1,23 @@
 import React, { useEffect, useState } from 'react';
 import './social-styles.css';
 import UserAvatar from '../UserAvatar';
-import { followUser, getDataForUser, getDataForUserByUserId, getFollowersByUserId, unfollowUser, unfollowUserByUserId } from '../../firebase';
+import { followUser, getDataForUser, getDataForUserByUserId, getFollowersByUserId, getFollowingByUserId, unfollowUser, unfollowUserByUserId } from '../../firebase';
 import { useUser } from '../../contexts/UserContext';
 import { useAuth } from '../../contexts/AuthContext';
 import { UserEnt } from '../../interfaces/UserEnt';
 
 // Define the follower interface
-interface Follower {
-    id: number;
-    name: string;
-}
 
 const Followers: React.FC = () => {
     const { 
-        userData:primaryUserData,
         viewedEntity,
         setViewedEntity,
         primaryEntity
     } = useUser();
     const { user } = useAuth();
     const [isPrimaryAndViewedEntitySame, setIsPrimaryAndViewedEntitySame] = useState<boolean>(false);
-    const [followersData, setFollowersData] = useState<any>({});
-    const [followingData, setFollowingData] = useState<any>({});
+    const [viewerFollowerData, setViewerFollowerData] = useState<any>({});
+    const [viewerFollowingData, setViewerFollowingData] = useState<any>({});
     const [loading, setLoading] = useState<boolean>(true);
 
     useEffect(() => {
@@ -45,27 +40,27 @@ const Followers: React.FC = () => {
                 userId = viewedEntity?.id;
             }
 
-            const followers = await getFollowersByUserId(userId);
-            setFollowersData(followers);
-            const following = await getFollowersByUserId(userId);
-            setFollowingData(following);
+            const [followers, following] = await Promise.all([
+                getFollowersByUserId(userId),
+                getFollowingByUserId(userId),
+            ]);
+            setViewerFollowerData(followers);
+            setViewerFollowingData(following);
 
-            setLoading(true);
+            setLoading(false);
         };
         fetchFollowers();
     }, [viewedEntity, primaryEntity]);
 
-    const followersCount = primaryUserData?.followersCount;
-    const followingCount = primaryUserData?.followingCount;
+    const followerCount = Object.keys(viewerFollowerData).length;
 
     // P.S. Currently only show the follow button if the user is not viewing their own profile
     const isUserFollowing = (followerId: string) => {
-        return followingData && followingData.hasOwnProperty(followerId);
+        return viewerFollowingData && viewerFollowingData.hasOwnProperty(followerId);
     };
 
     const handleFollow = async(followerId: string) => {
         try {
-            console.log("Following");
             const followerUserData = await getDataForUserByUserId(followerId);
             if (followerUserData) {
                 const followUserEnt: UserEnt = {
@@ -74,9 +69,9 @@ const Followers: React.FC = () => {
                 }
                 if(primaryEntity) {
                     await followUser(primaryEntity, followUserEnt);
-                    // Update the followingData state with the followed user
-                    setFollowingData((prevFollowingData) => ({
-                        ...prevFollowingData,
+                    // Update the viewerFollowingData state with the followed user
+                    setViewerFollowingData((prevviewerFollowingData) => ({
+                        ...prevviewerFollowingData,
                         [followerId]: followUserEnt,
                     }));
                 }
@@ -91,11 +86,11 @@ const Followers: React.FC = () => {
     const handleUnfollow = async(followerId: string) => {
         try {
             await unfollowUserByUserId(viewedEntity?.id, followerId);
-            // Remove the unfollowed user from followingData state
-            setFollowingData((prevFollowingData) => {
-                const updatedFollowingData = { ...prevFollowingData };
-                delete updatedFollowingData[followerId];
-                return updatedFollowingData;
+            // Remove the unfollowed user from viewerFollowingData state
+            setViewerFollowingData((prevviewerFollowingData) => {
+                const updatedviewerFollowingData = { ...prevviewerFollowingData };
+                delete updatedviewerFollowingData[followerId];
+                return updatedviewerFollowingData;
             });
         } catch (error) {
             console.error('Error unfollowing user:', error);
@@ -105,9 +100,9 @@ const Followers: React.FC = () => {
     return (
         <div>
             <h1>Followers</h1>
-            {followersCount > 0 ? (
+            {!loading && followerCount > 0 ? (
                 <div className="followerfollowing-list">
-                    {Object.keys(followersData).map((followerId: any) => {
+                    {Object.keys(viewerFollowerData).map((followerId: any) => {
                         const isFollowing = isUserFollowing(followerId);
                         const handleButtonClick = () => {
                             if (isFollowing) {
@@ -118,8 +113,8 @@ const Followers: React.FC = () => {
                         };
                         return (
                             <div key={followerId} className="followerfollowing-list-item">
-                                <UserAvatar size={32} profileImageUrl={followersData[followerId].profileImageUrl} />
-                                <h3 className="followerfollowing-title">{followersData[followerId].username}</h3>
+                                <UserAvatar size={32} profileImageUrl={viewerFollowerData[followerId].profileImageUrl} />
+                                <h3 className="followerfollowing-title">{viewerFollowerData[followerId].username}</h3>
                                 {isPrimaryAndViewedEntitySame && (
                                     <button onClick={handleButtonClick} className={isFollowing ? 'unfollow-btn' : ''}>
                                         {isFollowing ? 'Unfollow' : 'Follow'}

@@ -35,14 +35,14 @@ export const UserProvider: React.FC<any> = ({ children }) => {
 
     useEffect(() => {
         const fetchAndUpdateUserData = async () => {
-            if(!user || !user.uid) {
-                throw new Error('User not found');
-            };
+            // if(!user || !user.uid) {
+            //     throw new Error('User not found');
+            // };
             try {
                 setLoading(true);
                 const userData = await getDataForUser(user);
                 if(!userData) {
-                    throw new Error('User Data not found for user: ' + user.uid);
+                    throw new Error('User Data not found for user: ' + user?.uid);
                 };
                 const followersData = await getFollowers(user);
                 const followingData = await getFollowing(user);

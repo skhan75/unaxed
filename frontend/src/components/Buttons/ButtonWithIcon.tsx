@@ -7,6 +7,8 @@ interface ButtonWithIconProps {
     iconPosition?: 'left' | 'right';
     onClick?: () => void;
     isActive?: boolean;
+    secondary?: boolean;
+    className?: string;
 }
 
 const ButtonWithIcon: React.FC<any> = ({
@@ -14,13 +16,16 @@ const ButtonWithIcon: React.FC<any> = ({
     icon,
     iconPosition = 'left',
     onClick,
-    isActive = false,
+    secondary=false,
+    primary=true,
+    isActive=false,
+    className,
 }) => {
     return (
         <button
-            className={`button-with-icon${isActive ? ' active' : ''}`}
+            className={ className? className: `button-with-icon ${secondary ? 'secondary' : 'primary'}` }
             onClick={onClick}
-        >
+        >   
             {iconPosition === 'left' && icon}
             <span className="button-with-icon__title">{title}</span>
             {iconPosition === 'right' && icon}

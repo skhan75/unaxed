@@ -1,25 +1,32 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Create } from '@styled-icons/ionicons-outline';
 import { CheckCircle } from '@styled-icons/bootstrap';
+import { Parking } from '@styled-icons/boxicons-solid';
 import ButtonWithIcon from '../Buttons/ButtonWithIcon';
 import { Live } from '@styled-icons/fluentui-system-filled';
 import TabWithIcon from '../Tabs/TabWithIcon';
 import './styles/projects.css';
 import { useLocation, useNavigate } from 'react-router-dom';
+import LiveDot from '../LiveDot';
+import Modal from '../Modal';
+import CreateProject from './CreateProject';
+import { ProjectEnt } from '../../interfaces/ProjectEnt';
+import { Add } from '@styled-icons/fluentui-system-filled';
+import TextBox from '../TextBox';
+import { DocumentData } from 'firebase/firestore';
+import { getUserEntByUserId } from '../../firebase';
+import UserAvatar from '../UserAvatar';
+import { userInfo } from 'os';
 
-interface Project {
-    id: string;
-    title: string;
-    status: string;
-}
+
 
 const Projects: React.FC = () => {
     const [currentTab, setCurrentTab] = useState<string>('live');
-    const [projects, setProjects] = useState<Project[]>([
-        { id: '1', title: 'Project 1', status: 'live' },
-        { id: '2', title: 'Project 2', status: 'live' },
-        { id: '3', title: 'Project 3', status: 'completed' },
-    ]);
+    const [projects, setProjects] = useState<ProjectEnt[]>([]);
+    const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
+    const [contributorsData, setContributorsData] = useState<Object>({});
+    const [loading, setLoading] = useState<boolean>(true);
+    const [cachedData, setCachedData] = useState<boolean>(false); // Add cachedData state
 
     const navigate = useNavigate();
     const location = useLocation();
@@ -39,7 +46,63 @@ const Projects: React.FC = () => {
             searchParams.set('type', 'live');
             navigate(`${location.pathname}?${searchParams.toString()}`);
         }
-    }, [location.search]);
+
+        const fetchProjects = async () => {
+            if (cachedData) {
+                return;
+            }
+            const newprojects: ProjectEnt[] = [
+                {
+                    id: '1',
+                    data: {
+                        title: "Advanced AI System: J.A.R.V.I.S 2.0",
+                        description: "Develop an advanced artificial intelligence system to upgrade J.A.R.V.I.S. Enhance its capabilities in natural language processing, pattern recognition, and decision-making algorithms. Enable J.A.R.V.I.S to provide even more intuitive and efficient assistance to Tony Stark, from managing his suits and equipment to analyzing complex scientific data.",
+                        startedOn: '2022-10-10',
+                        status: 'live',
+                        contributors: ["S2Dt4hRaLfTxnnxX0iw0q4hVrCw2", "DtOT6QEftzcbMeqSOhxcW2q9vLm1"],
+                    }
+                },
+                {
+                    id: '2',
+                    data: {
+                        title: "Next-Generation Suit Technology: Mark XLV",
+                        description: "Create the next iteration of Iron Man's suit, Mark XLV, with cutting-edge technologies. Incorporate advanced materials for enhanced protection, propulsion systems for increased flight capabilities, and integrated weapon systems for improved combat effectiveness. Develop a streamlined user interface and advanced HUD (Heads-Up Display) for better situational awareness.",
+                        startedOn: '2023-02-10',
+                        status: 'live',
+                        contributors: ["S2Dt4hRaLfTxnnxX0iw0q4hVrCw2", "DtOT6QEftzcbMeqSOhxcW2q9vLm1"],
+                    }
+                },
+            ]
+
+            // First collect the list of unique contributors from the list of projects
+            const contributors: string[] = [];
+            newprojects.forEach((project) => {
+                project.data.contributors.forEach((contributor) => {
+                    if (!contributors.includes(contributor)) {
+                        contributors.push(contributor);
+                    }
+                });
+            });
+
+            // Then fetch the user data for each contributor
+            const contributorsData = {};
+            for (const contributor of contributors) {
+                const contributorData = await getUserEntByUserId(contributor);
+                contributorsData[contributor] = {
+                    firstName: contributorData?.data.firstName,
+                    lastName: contributorData?.data.lastName,
+                    username: contributorData?.data.username,
+                    profileImageUrl: contributorData?.data.profileImageUrl || null,
+                };
+            }
+            setContributorsData(contributorsData);
+            setProjects(newprojects);
+            setCachedData(true); // Cache the data
+            setLoading(false);
+        }
+        fetchProjects();
+    }, [cachedData]);
+
 
     const handleTabChange = (type: string) => {
         setCurrentTab(type);
@@ -56,24 +119,50 @@ const Projects: React.FC = () => {
         });
     };
 
-    const createProject = () => {
+    const startCreate = () => {
         // Generate a unique ID for the new project
         const projectId = Math.random().toString(36).substr(2, 9);
-
-        // Create the new project object
-        const newProject: Project = {
-            id: projectId,
-            title: `Project ${projectId}`,
-            status: 'live',
-        };
-
-        // Add the new project to the projects array
-        setProjects([...projects, newProject]);
+        setIsModalOpen(true);
     };
+
+    const closeModal = () => {
+        setIsModalOpen(false);
+    }
+
+    const handleCreate = () => {
+        // setProjects([...projects, project]);
+        closeModal();
+    }
+
+
+    const ProjectItem = ({ project }: { project: ProjectEnt }) => {
+        return (
+            <div className="project-item-container">
+                <div className="item">
+                    <div className="heading">{project.data.title}</div>
+                    <div className="subtitle">{project.data.startedOn} - Present</div>
+                </div>
+                <div className="item">
+                    <TextBox content={project.data.description} maxLength={200} />
+                </div>
+                <div className="item">
+                    <div className="subheading">Contributors</div>
+                    <div className="contributors-container">
+                        {project.data.contributors.map((contributor) => {
+                            const contributorData = contributorsData[contributor];
+                            return (
+                                <UserAvatar key={contributorData.username} firstName={contributorData.firstName} lastName={contributorData.lastName} profileImageUrl={contributorData.profileImageUrl} size={42} />
+                            )
+                        })}
+                    </div>
+                </div>
+            </div>
+        )
+    }
 
     const renderProjects = () => {
         const filteredProjects = projects.filter(
-            (project) => project.status === currentTab
+            (project) => project.data.status === currentTab
         );
 
         if (filteredProjects.length === 0) {
@@ -82,50 +171,80 @@ const Projects: React.FC = () => {
 
         return filteredProjects.map((project) => (
             <div className="projects-list-item" key={project.id}>
-                <h3>{project.title}</h3>
-                <p>Status: {project.status}</p>
+                <div className="project-item-container">
+                    <ProjectItem project={project} />
+                </div>
+               
             </div>
         ));
     };
 
     return (
         <div className="projects-container">
-            <div className="projects-header">
-            </div>
+            {loading ? (
+                <div className="loading-container">
+                    <div className="loading">Loading..</div>
+                </div>
 
-            <div className="projects-tabs">
-                <ul>
-                    <li>
-                        <TabWithIcon
-                            title="Live Projects"
-                            icon={<Live className="tab-icon" size={18} />}
-                            iconPosition="left"
-                            onClick={() => handleTabChange('live')}
-                            isActive={currentTab === 'live'}
-                        />
-                    </li>
-                    <li>
-                        <TabWithIcon
-                            title="Completed Projects"
-                            icon={<CheckCircle className="tab-icon" size={18} />}
-                            iconPosition="left"
-                            onClick={() => handleTabChange('completed')}
-                            isActive={currentTab === 'completed'}
-                        />
-                    </li>
-                </ul>
-            </div>
+            ) : (
+                <>
+                        <div className="projects-header">
+                        </div>
 
-            <div className="create-project-button">
-                <ButtonWithIcon
-                    title="Create Project"
-                    icon={<Create className="post-icon" size={18} />}
-                    iconPosition="left"
-                    onClick={createProject}
-                />
-            </div>
+                        <div className="projects-tabs">
+                            <ul>
+                                <li>
+                                    <TabWithIcon
+                                        title="Live"
+                                        icon={<LiveDot />}
+                                        iconPosition="left"
+                                        onClick={() => handleTabChange('live')}
+                                        isActive={currentTab === 'live'}
+                                    />
+                                </li>
+                                <li>
+                                    <TabWithIcon
+                                        title="Completed"
+                                        icon={<CheckCircle className="tab-icon" size={18} />}
+                                        iconPosition="left"
+                                        onClick={() => handleTabChange('completed')}
+                                        isActive={currentTab === 'completed'}
+                                    />
+                                </li>
+                                <li>
+                                    <TabWithIcon
+                                        title="Parked"
+                                        icon={<Parking className="tab-icon" size={18} />}
+                                        iconPosition="left"
+                                        onClick={() => handleTabChange('parked')}
+                                        isActive={currentTab === 'parked'}
+                                    />
+                                </li>
+                                <li>
+                                    <ButtonWithIcon
+                                        className="create-project-btn"
+                                        icon={<Add className="project-icon" size={20} />}
+                                        iconPosition="left"
+                                        onClick={startCreate}
+                                    />
+                                </li>
+                            </ul>
+                        </div>
 
-            <div className="projects-list">{renderProjects()}</div>
+                        <div className="create-project-container">
+
+                        </div>
+
+                        <div className="projects-list">
+                            {renderProjects()}
+                        </div>
+
+                        <Modal isOpen={isModalOpen} onRequestClose={closeModal}>
+                            <CreateProject onClose={closeModal} setProjects={setProjects} />
+                        </Modal>
+                </>
+            )}
+            
         </div>
     );
 };

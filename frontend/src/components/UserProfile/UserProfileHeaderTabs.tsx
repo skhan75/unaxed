@@ -28,7 +28,7 @@ const UserProfileHeaderTabs: React.FC<any> = ({
         { id: 'posts', label: 'Posts', show: true, icon: <RiArticleLine size={18} className="nav-icon" /> },
         { id: 'projects', label: 'Projects', show: true, icon: <FolderOpen size="18" className="nav-icon" /> },
         { id: 'vouches', label: 'Vouches', show: true, icon: <ThumbUp size="18" className="nav-icon" /> },
-        { id: 'collaborations', label: 'Collaborations', show: true, icon: <Users size="18" className="nav-icon" /> },
+        { id: 'programs', label: 'Programs', show: true, icon: <Users size="18" className="nav-icon" /> },
         { id: 'watchlist', label: 'Watch List', show: true, icon: <RemoveRedEye size={18} className="nav-icon" /> },
         { id: 'followers', label: 'Followers', show: false },
         { id: 'following', label: 'Following', show: false },

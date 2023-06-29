@@ -9,6 +9,7 @@
     border-radius: 5px;
     cursor: pointer;
     transition: background-color 0.3s;
+    /* width: auto; */
 }
 
 .button-with-icon.left {
@@ -25,4 +26,14 @@
 
 .button-with-icon:hover {
     background-color: #0350c9;
+}
+
+.button-with-icon.secondary {
+    background-color: #e0e0e0;
+    color: #333;
+    border: none;
+}
+
+.button-with-icon.secondary:hover {
+    background-color: #aeaeae6f;
 }
