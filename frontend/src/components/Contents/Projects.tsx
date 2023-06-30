@@ -28,6 +28,7 @@ const Projects: React.FC = () => {
     } = useUser();
     const { user } = useAuth();
     const [currentTab, setCurrentTab] = useState<string>('live');
+    const [previousPath, setPreviousPath] = useState<string>("");
     const [projects, setProjects] = useState<ProjectEnt[]>([]);
     const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
     const [contributorsData, setContributorsData] = useState<Object>({});
@@ -39,6 +40,9 @@ const Projects: React.FC = () => {
     const location = useLocation();
 
     useEffect(() => {
+        // This is to enable the back button to take back to previous path
+        setPreviousPath(`${location.pathname}?tab=projects&type=${currentTab}`);
+
         // Update the current tab based on the URL parameter
         const searchParams = new URLSearchParams(location.search);
         const tab = searchParams.get('tab');
@@ -55,10 +59,6 @@ const Projects: React.FC = () => {
         }
 
         const fetchProjects = async () => {
-            if (cachedData) {
-                return;
-            }
-
             // Check if viewed entity is primary or other
             const isPrimaryAndViewedEntitySame = primaryEntity?.id === viewedEntity?.id;
             setIsPrimaryAndViewedEntitySame(isPrimaryAndViewedEntitySame);
@@ -113,8 +113,7 @@ const Projects: React.FC = () => {
             setLoading(false);
         }
         fetchProjects();
-    }, [cachedData]);
-
+    }, [previousPath, navigate]);
 
     const handleTabChange = (type: string) => {
         setCurrentTab(type);
@@ -151,7 +150,7 @@ const Projects: React.FC = () => {
         return (
             <div className="project-item-container">
                 <div className="item">
-                    <div className="heading">{project.data.title}</div>
+                    <div className="heading-3">{project.data.title}</div>
                     <div className="subtitle">{project.data.startedOn} - Present</div>
                 </div>
                 <div className="item">

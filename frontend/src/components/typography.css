@@ -1,42 +1,42 @@
 /* Example Typography Styles */
 .heading-1 {
     font-size: 2.5rem;
-    font-family: Roboto;
+    font-family: QuickSand;
     font-weight: bold;
     margin-bottom: 1rem;
 }
 
 .heading-2 {
     font-size: 2rem;
-    font-family: Roboto;
+    font-family: QuickSand;
     font-weight: bold;
     margin-bottom: 1rem;
 }
 
 .heading-3 {
     font-size: 1.75rem;
-    font-family: Roboto;
+    font-family: QuickSand;
     font-weight: bold;
     margin-bottom: 1rem;
 }
 
 .heading-4 {
     font-size: 1.5rem;
-    font-family: Roboto;
+    font-family: QuickSand;
     font-weight: bold;
     margin-bottom: 1rem;
 }
 
 .heading-5 {
     font-size: 1.25rem;
-    font-family: Roboto;
+    font-family: QuickSand;
     font-weight: bold;
     margin-bottom: 1rem;
 }
 
 .heading-6 {
     font-size: 1rem;
-    font-family: Roboto;
+    font-family: QuickSand;
     font-weight: bold;
     margin-bottom: 1rem;
 }
@@ -44,12 +44,12 @@
 .body {
     font-size: 1rem;
     margin-bottom: 0.5rem;
-    font-family: Roboto;
+    font-family: QuickSand;
 }
 
 .caption {
     font-size: 0.8rem;
-    font-family: Roboto;
+    font-family: QuickSand;
     color: gray;
     margin-bottom: 0.5rem;
 }
@@ -58,6 +58,6 @@
     font-size: 14px;
     color: #777;
     padding-top: 10px;
-    font-family: Roboto;
+    font-family: QuickSand;
     font-weight: 500;
 }

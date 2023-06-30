@@ -455,5 +455,26 @@ export const uploadProfileImage = async (file: File, user: User | null): Promise
   }
 }
 
+export const searchUsersIncrementallyByPartialUsername = async (searchTerm: string, ): Promise<UserEnt[]> => {
+  try {
+    console.log("Searching...", searchTerm);
+    const usersRef = collection(db, "users");
+    const q = query(usersRef, where("username", ">=", searchTerm), where("username", "<=", searchTerm + '\uf8ff'));
+    const querySnapshot = await getDocs(q);
+    if (!querySnapshot.empty) {
+      return querySnapshot.docs.map((doc) => {
+        return {
+          id: doc.id,
+          data: doc.data()
+        }
+      });
+    }
+    console.log("No such user document!");
+    return [];
+  } catch (e) {
+    console.error("Error searching contributors ", e);
+    return [];
+  }
+};
 
 export default app;

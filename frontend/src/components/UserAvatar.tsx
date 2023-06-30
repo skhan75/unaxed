@@ -1,5 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
+// import { useHistory } from 'react-router-dom';
 
 interface UserAvatarProps {
     firstName?: string;
@@ -50,10 +51,9 @@ const UserAvatar: React.FC<UserAvatarProps> = ({
     };
 
     const navigate = useNavigate();
-
     const handleAvatarClick = () => {
         if (username) {
-            navigate(`/${username}`);
+            navigate(`/${username}`, { replace: false });
         }
     };
 
