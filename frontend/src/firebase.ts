@@ -3,7 +3,7 @@ import 'firebase/auth';
 import { 
   getFirestore, collection, deleteField,
   doc, setDoc, getDoc, updateDoc,
-  query, where, getDocs, DocumentData, DocumentReference 
+  query, where, getDocs, DocumentData, DocumentReference, orderBy 
 } from "firebase/firestore";
 import { 
   getAuth, updateProfile, User 
@@ -457,9 +457,13 @@ export const uploadProfileImage = async (file: File, user: User | null): Promise
 
 export const searchUsersIncrementallyByPartialUsername = async (searchTerm: string, ): Promise<UserEnt[]> => {
   try {
-    console.log("Searching...", searchTerm);
     const usersRef = collection(db, "users");
-    const q = query(usersRef, where("username", ">=", searchTerm), where("username", "<=", searchTerm + '\uf8ff'));
+    const q = query(
+      usersRef, 
+      where("username", ">=", searchTerm), 
+      where("username", "<=", searchTerm + '\uf8ff'), 
+      orderBy("username")
+    );
     const querySnapshot = await getDocs(q);
     if (!querySnapshot.empty) {
       return querySnapshot.docs.map((doc) => {

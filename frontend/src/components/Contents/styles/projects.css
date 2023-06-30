@@ -127,17 +127,23 @@
 
 .create-project-container {
     margin: 0 auto;
+    overflow: auto;
 }
 
 .create-project-container form {
     display: flex;
     flex-direction: column;
-    height: 100%;
+    /* height: 100%; */
+    /* margin-top: 50px; */
 }
 
 .create-project-container .header {
     /* margin-bottom: 10px; */
     margin-top: 5px;
+    
+    position: fixed;
+    z-index: 1;
+    width: 100%;
 }
 
 .create-project-container .footer {
@@ -145,6 +151,18 @@
     width: 800px;
     max-width: 800px;
     height: 800px;
+    margin-top: 60px;
+    overflow-y: auto;
+}
+
+.create-project-container .footer .image-upload {
+    padding: 0;
+}
+
+.create-project-container .footer .file {
+    border: none;
+    box-shadow: none;
+    font-size: 12px;
 }
 
 .create-project-container .line-separator {
@@ -155,6 +173,17 @@
 
 .create-project-container .create-cancel-btns {
     margin-top: auto;
+    display: flex;
+    justify-content: right;
+}
+
+.create-project-container .btn-wrapper {
+    display: flex;
+    width: auto;
+}
+
+.create-project-container .save-btn {
+    font-family: QuickSand;
 }
 
 .create-project-container label {
@@ -171,9 +200,12 @@
     border-radius: 5px;
     border: 1px solid #ccc;
     width: 100%;
+    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.1);
+    font-family: sans-serif;
+    font-size: 14px;
 }
 
-.project-title, .project-description {
+.project-title, .project-description, .project-label {
     display: flex;
     flex-direction: column;
 }
@@ -217,6 +249,13 @@
     outline: none;
 }
 
+.heading-4 {
+    padding-top: 10px;
+    padding-bottom: 5px;
+    font-size: 14px;
+    font-weight: 600;
+}
+
 .heading-3 {
     padding-top: 10px;
     padding-bottom: 5px;
@@ -243,7 +282,7 @@
     padding-top: 10px;
 }
 
-.project-item-container .create-project-container, .heading-2, .heading-3, .heading-1 {
+.project-item-container .create-project-container, .heading-2, .heading-3, .heading-1, .heading-4 {
     font-family: QuickSand;
     font-weight: 600;
     color: #263238;
@@ -334,4 +373,38 @@
     cursor: pointer;
     padding: 5px;
     margin-left: 4px;
+}
+
+.dropdown-user {
+    display: flex;
+    flex-direction: row;
+    gap: 10px;
+}
+
+
+.date-wrapper {
+    width: 100%;
+}
+
+.date-selectors {
+    display: flex;
+    gap: 10px;
+    justify-content: space-between;
+    width: 100%;
+    margin-bottom: 10px;
+}
+
+.date-selectors select {
+    padding: 8px;
+    border-radius: 4px;
+    border: 1px solid #ccc;
+    font-size: 14px;
+    /* width: 80px; */
+    width: 100%;
+}
+
+.date-selectors select:focus {
+    outline: none;
+    border-color: #007bff;
+    box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
 }

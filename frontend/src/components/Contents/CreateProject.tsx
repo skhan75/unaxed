@@ -5,6 +5,7 @@ import { ProjectEnt } from '../../interfaces/ProjectEnt';
 import JustLineSeparator from '../JustLineSeparator';
 import { searchUsersIncrementallyByPartialUsername } from '../../firebase';
 import { UserEnt } from '../../interfaces/UserEnt';
+import UserAvatar from '../UserAvatar';
 
 interface CreateProjectProps {
     onClose: () => void;
@@ -14,14 +15,34 @@ interface CreateProjectProps {
 interface ProjectData {
     title: string;
     description: string;
+    startDate: {
+        day: number;
+        month: number;
+        year: number;
+    };
+    endDate: {
+        day: number;
+        month: number;
+        year: number;
+    };
     timeline: string;
-    contributors: Array<string>;
+    contributors: UserEnt[];
 }
 
 const CreateProject: React.FC<CreateProjectProps> = ({ onClose, setProjects }) => {
     const [projectData, setProjectData] = useState<ProjectData>({
         title: '',
         description: '',
+        startDate: {
+            day: 0,
+            month: 0,
+            year: 0,
+        },
+        endDate: {
+            day: 0,
+            month: 0,
+            year: 0,
+        },
         timeline: '',
         contributors: [],
     });
@@ -91,17 +112,41 @@ const CreateProject: React.FC<CreateProjectProps> = ({ onClose, setProjects }) =
     };
 
     const handleContributorSelection = (contributor: UserEnt) => {
-        setProjectData((prevData) => ({
-            ...prevData,
-            contributors: [...prevData.contributors, contributor.data.username],
-        }));
+        if (!projectData.contributors.includes(contributor.data.username)) {
+            setProjectData((prevData) => ({
+                ...prevData,
+                contributors: [...prevData.contributors, contributor],
+            }));
+        }
         setShowDropdown(false);
     };
 
-    const handleContributorRemoval = (contributor: string) => {
+    const handleContributorRemoval = (contributor: UserEnt) => {
         setProjectData((prevData) => ({
             ...prevData,
-            contributors: prevData.contributors.filter((c) => c !== contributor),
+            contributors: prevData.contributors.filter((c) => c.id !== contributor.id),
+        }));
+    };
+
+    const handleStartDateChange = (e: ChangeEvent<HTMLSelectElement>) => {
+        const { name, value } = e.target;
+        setProjectData((prevData) => ({
+            ...prevData,
+            startDate: {
+                ...prevData.startDate,
+                [name]: parseInt(value),
+            },
+        }));
+    };
+
+    const handleEndDateChange = (e: ChangeEvent<HTMLSelectElement>) => {
+        const { name, value } = e.target;
+        setProjectData((prevData) => ({
+            ...prevData,
+            endDate: {
+                ...prevData.endDate,
+                [name]: parseInt(value),
+            },
         }));
     };
 
@@ -140,7 +185,18 @@ const CreateProject: React.FC<CreateProjectProps> = ({ onClose, setProjects }) =
         onClose();
     };
 
-    console.log("Projects ", projectData);
+    // To exclude the contributors that are already selected from the search results
+    // Not the most efficient way, but it works for now.
+    // TODO: Optimize this later to scale well, (maybe optimize the searchUsersIncrementallyByPartialUsername)
+    const filteredSearchResults = searchResults.filter(
+        (result) => !projectData.contributors.includes(result.data.username)
+    );
+    
+    const days = Array.from({ length: 31 }, (_, i) => i + 1);
+    const months = Array.from({ length: 12 }, (_, i) => i + 1);
+    const years = Array.from({ length: 10 }, (_, i) => new Date().getFullYear() + i);
+
+    console.log("projectData", projectData);
 
     return (
         <div className="create-project-container">
@@ -151,7 +207,11 @@ const CreateProject: React.FC<CreateProjectProps> = ({ onClose, setProjects }) =
 
             <div className="footer">
                 <form onSubmit={handleSubmit}>
-                    <div className="project-title">
+                    <UserAvatar profileImageUrl='' size={130}/>
+                    <div className="image-upload">
+                        <input className="file" type="file" accept="image/*" />
+                    </div>
+                    <div className="project-label">
                         <label htmlFor="title">Project Name</label>
                         <input
                             type="text"
@@ -162,8 +222,8 @@ const CreateProject: React.FC<CreateProjectProps> = ({ onClose, setProjects }) =
                             required
                         />
                     </div>
-                    <div className="project-description">
-                        <label htmlFor="description">Description:</label>
+                    <div className="project-label">
+                        <label htmlFor="description">Description</label>
                         <textarea
                             id="description"
                             name="description"
@@ -172,8 +232,84 @@ const CreateProject: React.FC<CreateProjectProps> = ({ onClose, setProjects }) =
                             required
                         ></textarea>
                     </div>
-                    <div className="project-timeline">
-                        <label htmlFor="timeline">Timeline:</label>
+                    <div className="project-label">
+                        <label htmlFor="media">Media</label>
+                        <div className="image-upload">
+                            <input className="file" type="file" accept="image/*" />
+                        </div>
+                    </div>
+                    <div className="project-label">
+                        <label htmlFor="startDate">Start Date</label>
+                        <div className="date-selectors">
+                            <div className="date-wrapper">
+                                <div className="heading-4">Day</div>
+                                <select name="day" value={projectData.startDate.day} onChange={handleStartDateChange}>
+                                    {days.map((day) => (
+                                        <option key={day} value={day}>
+                                            {day}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+                            <div className="date-wrapper">
+                                <div className="heading-4">Month</div>
+                                <select name="month" value={projectData.startDate.month} onChange={handleStartDateChange}>
+                                    {months.map((month) => (
+                                        <option key={month} value={month}>
+                                            {month}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+                            <div className="date-wrapper">
+                                <div className="heading-4">Year</div>
+                                <select name="year" value={projectData.startDate.year} onChange={handleStartDateChange}>
+                                    {years.map((year) => (
+                                        <option key={year} value={year}>
+                                            {year}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div className="project-label">
+                        <label htmlFor="endDate">End Date</label>
+                        <div className="date-selectors">
+                            <div className="date-wrapper">
+                                <div className="heading-4">Day</div>
+                                <select name="day" value={projectData.endDate.day} onChange={handleStartDateChange}>
+                                    {days.map((day) => (
+                                        <option key={day} value={day}>
+                                            {day}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+                            <div className="date-wrapper">
+                                <div className="heading-4">Month</div>
+                                <select name="month" value={projectData.endDate.month} onChange={handleStartDateChange}>
+                                    {months.map((month) => (
+                                        <option key={month} value={month}>
+                                            {month}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+                            <div className="date-wrapper">
+                                <div className="heading-4">Year</div>
+                                <select name="year" value={projectData.endDate.year} onChange={handleEndDateChange}>
+                                    {years.map((year) => (
+                                        <option key={year} value={year}>
+                                            {year}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div className="project-label">
+                        <label htmlFor="timeline">Timeline</label>
                         <input
                             type="text"
                             id="timeline"
@@ -187,8 +323,11 @@ const CreateProject: React.FC<CreateProjectProps> = ({ onClose, setProjects }) =
                         <label htmlFor="contributors">Contributors:</label>
                         <div className="selected-contributors-input">
                             {projectData.contributors.map((contributor) => (
-                                <div key={contributor} className="selected-contributor">
-                                    {contributor}
+                                <div key={contributor.id} className="selected-contributor">
+                                    <div className="dropdown-user">
+                                        <UserAvatar size={24} username={contributor.data.username} profileImageUrl={contributor.data.profileImageUrl} firstName={contributor.data.firstName} lastName={contributor.data.lastName} />
+                                        {contributor.data.username}
+                                    </div>
                                     <button type="button" className="remove-contributor" onClick={() => handleContributorRemoval(contributor)}>
                                         &times;
                                     </button>
@@ -205,17 +344,22 @@ const CreateProject: React.FC<CreateProjectProps> = ({ onClose, setProjects }) =
                         </div>
                         {showDropdown && (
                             <ul className="contributors-dropdown">
-                                {searchResults.map((result) => (
+                                {filteredSearchResults.map((result) => (
                                     <li key={result.id} onClick={() => handleContributorSelection(result)}>
-                                        {result.data.username}
+                                        <div className="dropdown-user">
+                                            <UserAvatar size={24} username={result.data.username} profileImageUrl={result.data.profileImageUrl} firstName={result.data.firstName} lastName={result.data.lastName} />
+                                            {result.data.username}
+                                        </div>
                                     </li>
                                 ))}
                             </ul>
                         )}
                     </div>
                     <div className="create-cancel-btns">
-                        <ButtonWithIcon title="Cancel" secondary onClick={handleCancel} />
-                        <ButtonWithIcon title="Create" onClick={handleCreate} />
+                        {/* <ButtonWithIcon title="Cancel" secondary onClick={handleCancel} /> */}
+                        <div className="btn-wrapper">
+                            <ButtonWithIcon className="save-btn" title="Save" onClick={handleCreate} />
+                        </div>
                     </div>
                 </form>
             </div>

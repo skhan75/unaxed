@@ -21,9 +21,10 @@ const ButtonWithIcon: React.FC<any> = ({
     isActive=false,
     className,
 }) => {
+    const nativeClass = `button-with-icon ${secondary ? 'secondary' : 'primary'}`;
     return (
         <button
-            className={ className? className: `button-with-icon ${secondary ? 'secondary' : 'primary'}` }
+            className={className ? `${nativeClass} ${className}` : nativeClass }
             onClick={onClick}
         >   
             {iconPosition === 'left' && icon}
