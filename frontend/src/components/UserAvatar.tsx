@@ -1,6 +1,5 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-// import { useHistory } from 'react-router-dom';
 
 interface UserAvatarProps {
     firstName?: string;
@@ -8,7 +7,7 @@ interface UserAvatarProps {
     size: number;
     profileImageUrl?: string;
     className?: string;
-    username?: string; // New prop for the username
+    username?: string; 
 }
 
 const UserAvatar: React.FC<UserAvatarProps> = ({

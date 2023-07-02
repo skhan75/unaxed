@@ -1,17 +1,20 @@
 import { initializeApp } from 'firebase/app';
+import { v4 as uuidv4 } from 'uuid';
 import 'firebase/auth';
 import { 
   getFirestore, collection, deleteField,
   doc, setDoc, getDoc, updateDoc,
-  query, where, getDocs, DocumentData, DocumentReference, orderBy 
+  query, where, getDocs, DocumentData, DocumentReference, 
+  orderBy 
 } from "firebase/firestore";
 import { 
   getAuth, updateProfile, User 
 } from "firebase/auth";
 import { 
-  getStorage, ref, uploadBytes, getDownloadURL 
+  getStorage, ref, uploadBytes, getDownloadURL
 } from "firebase/storage";
 import { UserEnt } from './interfaces/UserEnt';
+import { ProjectData, ProjectEnt } from './interfaces/ProjectEnt';
 
 const firebaseConfig = {
   apiKey: process.env.REACT_APP_API_KEY,
@@ -31,6 +34,7 @@ const storage = getStorage(app);
 const usersCollection = collection(db, 'users');
 const followersCollection = collection(db, 'followers');
 const followingCollection = collection(db, 'following');
+const projectsCollection = collection(db, 'projects');
 
 export const getFollowing = async (user: User|null) => {
   try {
@@ -455,6 +459,34 @@ export const uploadProfileImage = async (file: File, user: User | null): Promise
   }
 }
 
+export const uploadMediaForEntId = async (file: File, entID: string): Promise<string> => {
+  const mediaId =  __generateFixedUUID();
+  const projectRef = ref(storage, `project_media/${entID}/${mediaId}`);
+  try {
+    const snapshot = await uploadBytes(projectRef, file);
+    const downloadUrl = await getDownloadURL(snapshot.ref);
+    console.log('Uploaded image successfully!', projectRef.name);
+    return downloadUrl;
+  } catch (e) {
+    console.error("Error uploading image: ", e);
+    return "";
+  }
+}
+
+export const addProject = async (projectData: ProjectData): Promise<string> => {
+  try {
+    const projectDocRef = doc(projectsCollection);
+    const id = projectDocRef.id;
+    await setDoc(projectDocRef, { ...projectData });
+    console.log('Project added successfully!');
+    return id;
+  } catch (e) {
+    console.error("Error adding project - ", e);
+    return "";
+  }
+}
+
+
 export const searchUsersIncrementallyByPartialUsername = async (searchTerm: string, ): Promise<UserEnt[]> => {
   try {
     const usersRef = collection(db, "users");
@@ -480,5 +512,22 @@ export const searchUsersIncrementallyByPartialUsername = async (searchTerm: stri
     return [];
   }
 };
+
+
+
+const __generateFixedUUID = () => {
+  const uuid = uuidv4(); // Generate a UUID
+
+  // Convert UUID string to bytes
+  const uuidBytes = Uint8Array.from(
+    uuid.replace(/-/g, '').match(/.{2}/g).map((byte) => parseInt(byte, 16))
+  );
+
+  // Encode UUID bytes using Base64
+  const encodedUUID = btoa(String.fromCharCode.apply(null, uuidBytes));
+
+  // Remove padding characters (=) and return the fixed-size UUID
+  return encodedUUID.replace(/=+$/, '');
+}
 
 export default app;

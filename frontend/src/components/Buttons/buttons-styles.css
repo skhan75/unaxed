@@ -28,6 +28,12 @@
     background-color: #0350c9;
 }
 
+.button-with-icon:disabled {
+    background-color: #e0e0e0;
+    color: #fff;
+    cursor: not-allowed;
+}
+
 .button-with-icon.secondary {
     background-color: #e0e0e0;
     color: #333;
