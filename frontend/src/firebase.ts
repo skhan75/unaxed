@@ -459,17 +459,17 @@ export const uploadProfileImage = async (file: File, user: User | null): Promise
   }
 }
 
-export const uploadMediaForEntId = async (file: File, entID: string): Promise<string> => {
+export const uploadMediaForEntId = async (file: File, entID: string): Promise<{ mediaId: string, downloadUrl: string } | null> => {
   const mediaId =  __generateFixedUUID();
   const projectRef = ref(storage, `project_media/${entID}/${mediaId}`);
   try {
     const snapshot = await uploadBytes(projectRef, file);
     const downloadUrl = await getDownloadURL(snapshot.ref);
     console.log('Uploaded image successfully!', projectRef.name);
-    return downloadUrl;
+    return { mediaId: mediaId, downloadUrl: downloadUrl };
   } catch (e) {
     console.error("Error uploading image: ", e);
-    return "";
+    return null;
   }
 }
 
@@ -477,11 +477,23 @@ export const addProject = async (projectData: ProjectData): Promise<string> => {
   try {
     const projectDocRef = doc(projectsCollection);
     const id = projectDocRef.id;
-    await setDoc(projectDocRef, { ...projectData });
+    await setDoc(projectDocRef, { ...projectData, projectId: id });
     console.log('Project added successfully!');
     return id;
   } catch (e) {
     console.error("Error adding project - ", e);
+    return "";
+  }
+}
+
+export const updateProject = async (projectId: string, projectData: ProjectData): Promise<string> => {
+  try {
+    const projectDocRef = doc(projectsCollection, projectId);
+    await updateDoc(projectDocRef, { ...projectData });
+    console.log('Project updated successfully!');
+    return projectData.projectId;
+  } catch (e) {
+    console.error("Error updating project - ", e);
     return "";
   }
 }
@@ -513,19 +525,13 @@ export const searchUsersIncrementallyByPartialUsername = async (searchTerm: stri
   }
 };
 
-
-
 const __generateFixedUUID = () => {
-  const uuid = uuidv4(); // Generate a UUID
-
-  // Convert UUID string to bytes
+  const uuid = uuidv4(); 
   const uuidBytes = Uint8Array.from(
     uuid.replace(/-/g, '').match(/.{2}/g).map((byte) => parseInt(byte, 16))
   );
-
   // Encode UUID bytes using Base64
   const encodedUUID = btoa(String.fromCharCode.apply(null, uuidBytes));
-
   // Remove padding characters (=) and return the fixed-size UUID
   return encodedUUID.replace(/=+$/, '');
 }

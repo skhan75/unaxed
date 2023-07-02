@@ -16,6 +16,7 @@ interface ProjectContributorsEnt {
 }
 
 interface ProjectData {
+    projectId: string;
     title: string;
     description: string;
     startDate?: {
@@ -28,7 +29,7 @@ interface ProjectData {
         month: number;
         year: number;
     };
-    media?: [];
+    media?: { mediaId: string, downloadUrl: string }[];
     timeline?: string;
     contributors?: ProjectContributorsEnt[];
 }

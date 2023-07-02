@@ -3,12 +3,11 @@ import './styles/projects.css';
 import ButtonWithIcon from '../Buttons/ButtonWithIcon';
 import { ProjectContributorsEnt, ProjectData, ProjectEnt } from '../../interfaces/ProjectEnt';
 import JustLineSeparator from '../JustLineSeparator';
-import { addProject, searchUsersIncrementallyByPartialUsername, uploadMediaForEntId } from '../../firebase';
+import { addProject, searchUsersIncrementallyByPartialUsername, updateProject, uploadMediaForEntId } from '../../firebase';
 import { UserEnt } from '../../interfaces/UserEnt';
 import UserAvatar from '../UserAvatar';
 import { Add } from '@styled-icons/fluentui-system-regular';
 import { useAuth } from '../../contexts/AuthContext';
-import { profile } from 'console';
 
 interface CreateProjectProps {
     onClose: () => void;
@@ -19,6 +18,7 @@ const CreateProject: React.FC<CreateProjectProps> = ({ onClose, setProjects }) =
     const { user } = useAuth();
     const [projectData, setProjectData] = useState<ProjectData>({
         title: '',
+        projectId: '',
         description: '',
         timeline: '',
         contributors: [],
@@ -38,6 +38,8 @@ const CreateProject: React.FC<CreateProjectProps> = ({ onClose, setProjects }) =
     const [searchContributor, setSearchContributor] = useState('');
     const [searchResults, setSearchResults] = useState<UserEnt[]>([]);
     const [selectedMedia, setSelectedMedia] = useState<File[]>([]);
+    const [allSelectedMedia, setAllSelectedMedia] = useState<{ mediaId: string, downloadUrl: string }[]>([]);
+    const [currentProjectId, setCurrentProjectId] = useState<string | null>(null);
     const [showDropdown, setShowDropdown] = useState(false);
 
     const inputRef = useRef<HTMLInputElement>(null);
@@ -203,16 +205,68 @@ const CreateProject: React.FC<CreateProjectProps> = ({ onClose, setProjects }) =
         onClose();
     };
 
+    // Add the useEffect hook here
+    useEffect(() => {
+
+        if (allSelectedMedia.length > 0) {
+            setProjectData((prevData) => {
+                if (prevData) {
+                    return {
+                        ...prevData,
+                        media: allSelectedMedia,
+                    };
+                }
+                return prevData;
+            });
+        };
+
+        const updateProjectRecords = async () => {
+            // And update the Project records in the database
+            if (currentProjectId) {
+                await updateProject(currentProjectId, { media: allSelectedMedia } as ProjectData);
+            }
+        };
+
+        updateProjectRecords();
+    }, [allSelectedMedia]);
+
     const handleSave = async (e: FormEvent) => {
         e.preventDefault();
 
         const newProjectId = await addProject(projectData);
+        setCurrentProjectId(newProjectId);
 
+        let newMedias = [] as { mediaId: string, downloadUrl: string }[];
+
+        // If there are media files selected, add them to the storage and 
+        // add the media IDs to the project data
         if (selectedMedia.length > 0) {
-            selectedMedia.forEach(async (mediaFile) => {
-                const mediaUploadResponse = await uploadMediaForEntId(mediaFile, newProjectId);
-            })
+            const uploadPromises = selectedMedia.map(async (mediaFile) => {
+                const uploadResponse = await uploadMediaForEntId(mediaFile, newProjectId);
+                if(uploadResponse) {
+                    const { mediaId, downloadUrl } = uploadResponse;
+                    return { mediaId, downloadUrl };
+                } else {
+                    throw new Error("Error uploading media file");
+                }
+            });
+
+            newMedias = await Promise.all(uploadPromises);
+        };
+
+        setAllSelectedMedia(newMedias);
+
+        const newProject: ProjectEnt = {
+            id: newProjectId,
+            data: projectData,
+        };
+
+        console.log("NEW PROJECT", newProject);
+
+        if (setProjects) {
+            setProjects((prevProjects) => [...prevProjects, newProject]);
         }
+        // onClose();
 
         // console.log("Response", JSON.stringify(response, null, 2));
 
@@ -232,7 +286,7 @@ const CreateProject: React.FC<CreateProjectProps> = ({ onClose, setProjects }) =
         // if (setProjects) {
         //     setProjects((prevProjects) => [...prevProjects, newProject]);
         // }
-        onClose();
+        // onClose();
     };
     
     const handleMediaRemoval = (file: File) => {
