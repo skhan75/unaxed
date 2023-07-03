@@ -23,15 +23,16 @@ interface ProjectData {
         day: number;
         month: number;
         year: number;
-    };
+    } | null;
     endDate?: {
         day: number;
         month: number;
         year: number;
-    };
+    } | null;
     media?: { mediaId: string, downloadUrl: string }[];
     timeline?: string;
     contributors?: ProjectContributorsEnt[];
+    status: string;
 }
 
 interface ProjectEnt {

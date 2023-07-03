@@ -9,7 +9,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import LiveDot from '../LiveDot';
 import Modal from '../Modal';
 import CreateProject from './CreateProject';
-import { ProjectEnt } from '../../interfaces/ProjectEnt';
+import { ProjectContributorsEnt, ProjectEnt } from '../../interfaces/ProjectEnt';
 import { Add } from '@styled-icons/fluentui-system-filled';
 import TextBox from '../TextBox';
 import { getUserEntByUserId } from '../../firebase';
@@ -71,7 +71,24 @@ const Projects: React.FC = () => {
                         description: "Develop an advanced artificial intelligence system to upgrade J.A.R.V.I.S. Enhance its capabilities in natural language processing, pattern recognition, and decision-making algorithms. Enable J.A.R.V.I.S to provide even more intuitive and efficient assistance to Tony Stark, from managing his suits and equipment to analyzing complex scientific data.",
                         startedOn: '2022-10-10',
                         status: 'live',
-                        contributors: ["S2Dt4hRaLfTxnnxX0iw0q4hVrCw2", "DtOT6QEftzcbMeqSOhxcW2q9vLm1"],
+                        contributors: [{
+                            id: 'DtOT6QEftzcbMeqSOhxcW2q9vLm1',
+                            data: {
+                                contributorId: 'DtOT6QEftzcbMeqSOhxcW2q9vLm1',
+                                username: 'thespidey',
+                                firstName: 'Peter',
+                                lastName: 'Parker',
+                            },
+                        }, {
+                            id: 'S2Dt4hRaLfTxnnxX0iw0q4hVrCw2',
+                            data: {
+                                contributorId: 'S2Dt4hRaLfTxnnxX0iw0q4hVrCw2',
+                                username: 'brucethebat',
+                                firstName: 'Bruce',
+                                lastName: 'Banner',
+                                profileImageUrl: 'https://firebasestorage.googleapis.com/v0/b/unaxed-b2a7e.appspot.com/o/profile_images%2FS2Dt4hRaLfTxnnxX0iw0q4hVrCw2?alt=media&token=c76810ed-8d94-4548-a32e-20138aa9132f',
+                            }
+                        }]
                     }
                 },
                 {
@@ -81,16 +98,34 @@ const Projects: React.FC = () => {
                         description: "Create the next iteration of Iron Man's suit, Mark XLV, with cutting-edge technologies. Incorporate advanced materials for enhanced protection, propulsion systems for increased flight capabilities, and integrated weapon systems for improved combat effectiveness. Develop a streamlined user interface and advanced HUD (Heads-Up Display) for better situational awareness.",
                         startedOn: '2023-02-10',
                         status: 'live',
-                        contributors: ["S2Dt4hRaLfTxnnxX0iw0q4hVrCw2", "DtOT6QEftzcbMeqSOhxcW2q9vLm1"],
+                        contributors: [{
+                            id: 'DtOT6QEftzcbMeqSOhxcW2q9vLm1',
+                            data: {
+                                contributorId: 'DtOT6QEftzcbMeqSOhxcW2q9vLm1',
+                                username: 'thespidey',
+                                firstName: 'Peter',
+                                lastName: 'Parker',
+                            },
+                        }, {
+                            id: 'S2Dt4hRaLfTxnnxX0iw0q4hVrCw2',
+                            data: {
+                                contributorId: 'S2Dt4hRaLfTxnnxX0iw0q4hVrCw2',
+                                username: 'brucethebat',
+                                firstName: 'Bruce',
+                                lastName: 'Banner',
+                                profileImageUrl: 'https://firebasestorage.googleapis.com/v0/b/unaxed-b2a7e.appspot.com/o/profile_images%2FS2Dt4hRaLfTxnnxX0iw0q4hVrCw2?alt=media&token=c76810ed-8d94-4548-a32e-20138aa9132f',
+                            }
+                        }]
                     }
                 },
             ]
 
             // First collect the list of unique contributors from the list of projects
-            const contributors: string[] = [];
+            const contributors: ProjectContributorsEnt[] = [];
             newprojects.forEach((project) => {
                 project.data.contributors.forEach((contributor) => {
-                    if (!contributors.includes(contributor)) {
+                    const existingContributor = contributors.find((c) => c.id === contributor.id);
+                    if (!existingContributor) {
                         contributors.push(contributor);
                     }
                 });
@@ -98,15 +133,18 @@ const Projects: React.FC = () => {
 
             // Then fetch the user data for each contributor
             const contributorsData = {};
-            for (const contributor of contributors) {
-                const contributorData = await getUserEntByUserId(contributor);
-                contributorsData[contributor] = {
-                    firstName: contributorData?.data.firstName,
-                    lastName: contributorData?.data.lastName,
-                    username: contributorData?.data.username,
-                    profileImageUrl: contributorData?.data.profileImageUrl || null,
-                };
-            }
+            await Promise.all(
+                contributors.map(async (contributor) => {
+                    const contributorData = await getUserEntByUserId(contributor.id);
+                    contributorsData[contributor.id] = {
+                        firstName: contributorData?.data.firstName,
+                        lastName: contributorData?.data.lastName,
+                        username: contributorData?.data.username,
+                        profileImageUrl: contributorData?.data.profileImageUrl || null,
+                    };
+                })
+            );
+            
             setContributorsData(contributorsData);
             setProjects(newprojects);
             setCachedData(true); // Cache the data
@@ -160,7 +198,7 @@ const Projects: React.FC = () => {
                     <div className="subheading">Contributors</div>
                     <div className="contributors-container">
                         {project.data.contributors.map((contributor) => {
-                            const contributorData = contributorsData[contributor];
+                            const contributorData = contributor.data;
                             return (
                                 <UserAvatar key={contributorData.username} firstName={contributorData.firstName} lastName={contributorData.lastName} profileImageUrl={contributorData.profileImageUrl} username={contributorData.username} size={42} />
                             )
@@ -189,6 +227,8 @@ const Projects: React.FC = () => {
             </div>
         ));
     };
+
+    console.log("Projects: ", projects);
 
     return (
         <div className="projects-container">

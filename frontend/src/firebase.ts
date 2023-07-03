@@ -475,9 +475,11 @@ export const uploadMediaForEntId = async (file: File, entID: string): Promise<{ 
 
 export const addProject = async (projectData: ProjectData): Promise<string> => {
   try {
+    console.log("adding Project" , projectData);
     const projectDocRef = doc(projectsCollection);
     const id = projectDocRef.id;
-    await setDoc(projectDocRef, { ...projectData, projectId: id });
+    const dataToAdd = { ...projectData, projectId: id };
+    await setDoc(projectDocRef, dataToAdd);
     console.log('Project added successfully!');
     return id;
   } catch (e) {

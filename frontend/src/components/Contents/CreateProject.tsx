@@ -8,6 +8,7 @@ import { UserEnt } from '../../interfaces/UserEnt';
 import UserAvatar from '../UserAvatar';
 import { Add } from '@styled-icons/fluentui-system-regular';
 import { useAuth } from '../../contexts/AuthContext';
+import { useUser } from '../../contexts/UserContext';
 
 interface CreateProjectProps {
     onClose: () => void;
@@ -16,6 +17,7 @@ interface CreateProjectProps {
 
 const CreateProject: React.FC<CreateProjectProps> = ({ onClose, setProjects }) => {
     const { user } = useAuth();
+    const { userData } = useUser();
     const [projectData, setProjectData] = useState<ProjectData>({
         title: '',
         projectId: '',
@@ -23,6 +25,7 @@ const CreateProject: React.FC<CreateProjectProps> = ({ onClose, setProjects }) =
         timeline: '',
         contributors: [],
         media: [],
+        status: 'parked',
         startDate: {
             day: 1,
             month: 1,
@@ -117,7 +120,7 @@ const CreateProject: React.FC<CreateProjectProps> = ({ onClose, setProjects }) =
                     username: username,
                     firstName: firstName,
                     lastName: lastName,
-                    profileImageUrl: profileImageUrl,
+                    profileImageUrl: profileImageUrl || "",
                 },
             };
 
@@ -133,7 +136,6 @@ const CreateProject: React.FC<CreateProjectProps> = ({ onClose, setProjects }) =
                         contributors: [newContributor],
                     }
                 }
-                return prevData;
             });
         }
         setShowDropdown(false);
@@ -232,8 +234,27 @@ const CreateProject: React.FC<CreateProjectProps> = ({ onClose, setProjects }) =
 
     const handleSave = async (e: FormEvent) => {
         e.preventDefault();
+        
+        // Now add the current user as a contributor to the project, since he/she is the one creating it
+        const currentUserContributor: ProjectContributorsEnt = {
+            id: user?.uid || userData?.userId,
+            data: {
+                contributorId: user?.uid || userData?.userId,
+                username: userData?.username || "",
+                firstName: userData?.firstName || "",
+                lastName: userData?.lastName || "",
+                profileImageUrl: userData?.profileImageUrl || "",
+            },
+        };
 
-        const newProjectId = await addProject(projectData);
+        const updatedProjectData = {
+            ...projectData,
+            contributors: [...(projectData.contributors || []), currentUserContributor],
+        }
+
+        setProjectData(updatedProjectData);
+
+        const newProjectId = await addProject(updatedProjectData);
         setCurrentProjectId(newProjectId);
 
         let newMedias = [] as { mediaId: string, downloadUrl: string }[];
@@ -253,7 +274,7 @@ const CreateProject: React.FC<CreateProjectProps> = ({ onClose, setProjects }) =
 
             newMedias = await Promise.all(uploadPromises);
         };
-
+        projectData.status = 'parked';
         setAllSelectedMedia(newMedias);
 
         const newProject: ProjectEnt = {
@@ -261,32 +282,10 @@ const CreateProject: React.FC<CreateProjectProps> = ({ onClose, setProjects }) =
             data: projectData,
         };
 
-        console.log("NEW PROJECT", newProject);
-
         if (setProjects) {
             setProjects((prevProjects) => [...prevProjects, newProject]);
         }
-        // onClose();
-
-        // console.log("Response", JSON.stringify(response, null, 2));
-
-        // TODO: Add the media files to the storage unqique to project IDs
-
-
-        // const newProject: ProjectEnt = {
-        //     id: Math.random().toString(36).substr(2, 9),
-        //     data: {
-        //         title,
-        //         description,
-        //         timeline,
-        //         contributors,
-        //         status: 'parked',
-        //     },
-        // };
-        // if (setProjects) {
-        //     setProjects((prevProjects) => [...prevProjects, newProject]);
-        // }
-        // onClose();
+        onClose();
     };
     
     const handleMediaRemoval = (file: File) => {
@@ -313,6 +312,8 @@ const CreateProject: React.FC<CreateProjectProps> = ({ onClose, setProjects }) =
     const filteredSearchResults = searchResults.filter(
         (result) => !projectData?.contributors?.some((contributor) => contributor.data.username === result.data.username)
     );
+
+    console.log("projectData", projectData)
     
     const days = Array.from({ length: 31 }, (_, i) => i + 1);
     const months = Array.from({ length: 12 }, (_, i) => i + 1);
