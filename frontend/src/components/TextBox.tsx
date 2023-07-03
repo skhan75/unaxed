@@ -4,9 +4,10 @@ import './seemore.css';
 const TextBox = ({ content, maxLength }) => {
     const [showFullContent, setShowFullContent] = useState(false);
     const truncatedContent = content.substring(0, maxLength);
+    const shouldShowSeeMore = content.length > maxLength;
 
     const handleSeeMore = () => {
-        setShowFullContent(!showFullContent);
+        setShowFullContent(true);
     };
 
     const handleShowLess = () => {
@@ -22,8 +23,8 @@ const TextBox = ({ content, maxLength }) => {
                 </div>
             ) : (
                 <div className="see-more-container">
-                    {truncatedContent}...
-                    <button className="see-more" onClick={handleSeeMore}>see more..</button>
+                    {truncatedContent}
+                    {shouldShowSeeMore && <button className="see-more" onClick={handleSeeMore}>see more..</button>}
                 </div>
             )}
         </div>
