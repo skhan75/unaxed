@@ -115,24 +115,15 @@ button:disabled {
 
 .profile-page-container {
     display: flex;
-    /* margin-left: 20%;
-    margin-right: 20%; */
-    /* width: 100%; */
-    /* padding: var(--page-padding); */
-    /* align-items: center; */
     justify-content: center;
 }
 
 .profile-page-sub-container {
     display: flex;
     width: 2000px;
-
 }
 
 .column {
-    /* flex: 1; */
-    /* Distribute space equally */
-    /* padding: 20px; */
     height: 100vh;
 }
 

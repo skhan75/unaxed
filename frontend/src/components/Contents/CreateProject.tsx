@@ -3,7 +3,10 @@ import './styles/projects.css';
 import ButtonWithIcon from '../Buttons/ButtonWithIcon';
 import { ProjectContributorsEnt, ProjectData, ProjectEnt } from '../../interfaces/ProjectEnt';
 import JustLineSeparator from '../JustLineSeparator';
-import { addProject, searchUsersIncrementallyByPartialUsername, updateProject, uploadMediaForEntId } from '../../firebase';
+import { addProject, addProjectForUser, 
+    createProject, searchUsersIncrementallyByPartialUsername, 
+    updateProject, uploadMediaForEntId 
+} from '../../firebase';
 import { UserEnt } from '../../interfaces/UserEnt';
 import UserAvatar from '../UserAvatar';
 import { Add } from '@styled-icons/fluentui-system-regular';
@@ -234,7 +237,7 @@ const CreateProject: React.FC<CreateProjectProps> = ({ onClose, setProjects }) =
 
     const handleSave = async (e: FormEvent) => {
         e.preventDefault();
-        
+
         // Now add the current user as a contributor to the project, since he/she is the one creating it
         const currentUserContributor: ProjectContributorsEnt = {
             id: user?.uid || userData?.userId,
@@ -254,8 +257,22 @@ const CreateProject: React.FC<CreateProjectProps> = ({ onClose, setProjects }) =
 
         setProjectData(updatedProjectData);
 
-        const newProjectId = await addProject(updatedProjectData);
-        setCurrentProjectId(newProjectId);
+        if(!user?.uid) throw new Error("User not logged in");
+
+        // Create a new project
+        const projectEntId = await createProject(updatedProjectData);
+        const projectRecordToUpdateOnContributors = { projects: [projectEntId] }
+
+        // update the projects list on all contributors
+        const allContributors = updatedProjectData.contributors || [];
+        
+        await Promise.all(allContributors.map(async (contributor) => {
+           await addProjectForUser(projectEntId, contributor.id);
+        }));
+       
+
+        // const newProjectId = await addProject(updatedProjectData, user?.uid);
+        setCurrentProjectId(projectEntId);
 
         let newMedias = [] as { mediaId: string, downloadUrl: string }[];
 
@@ -263,7 +280,7 @@ const CreateProject: React.FC<CreateProjectProps> = ({ onClose, setProjects }) =
         // add the media IDs to the project data
         if (selectedMedia.length > 0) {
             const uploadPromises = selectedMedia.map(async (mediaFile) => {
-                const uploadResponse = await uploadMediaForEntId(mediaFile, newProjectId);
+                const uploadResponse = await uploadMediaForEntId(mediaFile, projectEntId);
                 if(uploadResponse) {
                     const { mediaId, downloadUrl } = uploadResponse;
                     return { mediaId, downloadUrl };
@@ -278,7 +295,7 @@ const CreateProject: React.FC<CreateProjectProps> = ({ onClose, setProjects }) =
         setAllSelectedMedia(newMedias);
 
         const newProject: ProjectEnt = {
-            id: newProjectId,
+            id: projectEntId,
             data: projectData,
         };
 
@@ -312,8 +329,6 @@ const CreateProject: React.FC<CreateProjectProps> = ({ onClose, setProjects }) =
     const filteredSearchResults = searchResults.filter(
         (result) => !projectData?.contributors?.some((contributor) => contributor.data.username === result.data.username)
     );
-
-    console.log("projectData", projectData)
     
     const days = Array.from({ length: 31 }, (_, i) => i + 1);
     const months = Array.from({ length: 12 }, (_, i) => i + 1);

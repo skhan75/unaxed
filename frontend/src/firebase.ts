@@ -5,7 +5,7 @@ import {
   getFirestore, collection, deleteField,
   doc, setDoc, getDoc, updateDoc,
   query, where, getDocs, DocumentData, DocumentReference, 
-  orderBy 
+  orderBy, onSnapshot
 } from "firebase/firestore";
 import { 
   getAuth, updateProfile, User 
@@ -29,7 +29,7 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 
 export const auth = getAuth(app);
-const db = getFirestore(app);
+export const db = getFirestore(app);
 const storage = getStorage(app);
 const usersCollection = collection(db, 'users');
 const followersCollection = collection(db, 'followers');
@@ -351,6 +351,24 @@ export const updateUserData = async (newUserData: any, user: User|null) => {
   }
 }
 
+export const updateUserDataWithUserId = async (updatedData: any, userId: string) => {
+  try {
+    const userDocRef = doc(usersCollection, userId);
+    const userDocSnap = await getDoc(userDocRef);
+    if (userDocSnap.exists()) {
+      const userData = userDocSnap.data();
+      const projects = userData.projects || [];
+      const updatedProjects = [...projects, ...updatedData.projects];
+      await updateDoc(userDocRef, { projects: updatedProjects });
+      console.log('Document successfully updated!');
+    } else {
+      console.log('User document does not exist!');
+    }
+  } catch (e) {
+    console.error('Error updating document: ', e);
+  }
+};
+
 export const getUserEntByUserId = async (userId: string): Promise<UserEnt | null> => {
   try {
     const usersDocRef = doc(db, "users", userId);
@@ -473,20 +491,57 @@ export const uploadMediaForEntId = async (file: File, entID: string): Promise<{ 
   }
 }
 
-export const addProject = async (projectData: ProjectData): Promise<string> => {
+export const createProject = async (projectData: ProjectData): Promise<string> => {
   try {
-    console.log("adding Project" , projectData);
     const projectDocRef = doc(projectsCollection);
     const id = projectDocRef.id;
     const dataToAdd = { ...projectData, projectId: id };
     await setDoc(projectDocRef, dataToAdd);
-    console.log('Project added successfully!');
     return id;
   } catch (e) {
     console.error("Error adding project - ", e);
     return "";
   }
 }
+
+export const addProject = async (projectData: ProjectData, viewedEntId: string): Promise<string> => {
+  try {
+    const projectDocRef = doc(projectsCollection);
+    const id = projectDocRef.id;
+    const dataToAdd = { ...projectData, projectId: id };
+    // Create project
+    await setDoc(projectDocRef, dataToAdd);
+
+    console.log('Project added successfully!');
+    const updatedData = {
+      projects: [id]
+    }
+    await updateUserDataWithUserId(updatedData, viewedEntId);
+    console.log("Project ID added to user's projects list for userId - ", viewedEntId);
+    return id;
+  } catch (e) {
+    console.error("Error adding project - ", e);
+    return "";
+  }
+}
+
+export const addProjectForUser = async (projectId: string, userId: string): Promise<void> => {
+  try {
+    const userDocRef = doc(usersCollection, userId);
+    const userDocSnap = await getDoc(userDocRef);
+    if (userDocSnap.exists()) {
+      const userData = userDocSnap.data();
+      const projects = userData.projects || [];
+      const updatedProjects = [...projects, projectId];
+      await updateDoc(userDocRef, { projects: updatedProjects });
+      console.log('Document successfully updated!');
+    } else {
+      console.log('User document does not exist!');
+    }
+  } catch (e) {
+    console.error('Error updating document: ', e);
+  }
+};
 
 export const updateProject = async (projectId: string, projectData: ProjectData): Promise<string> => {
   try {
@@ -499,7 +554,6 @@ export const updateProject = async (projectId: string, projectData: ProjectData)
     return "";
   }
 }
-
 
 export const searchUsersIncrementallyByPartialUsername = async (searchTerm: string, ): Promise<UserEnt[]> => {
   try {
@@ -526,6 +580,64 @@ export const searchUsersIncrementallyByPartialUsername = async (searchTerm: stri
     return [];
   }
 };
+
+export const getUserRecordByUserId = async (userId: string): Promise<UserEnt | null> => {
+  try {
+    const usersDocRef = doc(db, "users", userId);
+    const docSnap = await getDoc(usersDocRef);
+    if (docSnap.exists()) {
+      return {
+        id: userId,
+        data: docSnap.data()
+      };
+    } else {
+      console.log("No such document!");
+      return null;
+    }
+  } catch (e) {
+    console.error("Error adding document: ", e);
+    return null;
+  }
+};
+
+export const getProjectsByProjectId = async (projectId: string): Promise<ProjectEnt | null> => {
+  try {
+    const projectRef = doc(db, "projects", projectId); // Use doc instead of collection
+    const docSnap = await getDoc(projectRef);
+
+    if (docSnap.exists()) {
+      return {
+        id: projectId,
+        data: docSnap.data()
+      };
+    } else {
+      console.log("No such document!");
+      return null;
+    }
+  } catch (e) {
+    console.error("Error retrieving document: ", e);
+    return null;
+  }
+};
+
+export const setupPrimaryEntityListener = (userId, onUpdate) => {
+  const primaryEntityRef = doc(db, 'users', userId);
+  const unsubscribe = onSnapshot(primaryEntityRef, (snapshot) => {
+    if (snapshot.exists()) {
+      const updatedEntityData = snapshot.data();
+      const updatedEntity = {
+        id: userId,
+        data: updatedEntityData,
+      };
+      onUpdate(updatedEntity);
+    } else {
+      onUpdate(null);
+    }
+  });
+
+  return unsubscribe;
+};
+
 
 const __generateFixedUUID = () => {
   const uuid = uuidv4(); 

@@ -23,16 +23,20 @@
     padding: 0;
     margin: 0;
     display: flex;
-    justify-content: space-between;
+    justify-content: flex-start;
 }
 
-.projects-tabs ul li:last-child {
+/* .projects-tabs ul li:last-child {
     margin-left: auto;
-}
+} */
 
-.projects-tabs li {
+.projects-tabs ul li {
     display: inline-block;
     margin-right: 10px;
+}
+
+.projects-tabs .spacer {
+    flex-grow: 1;
 }
 
 .projects-tabs button {

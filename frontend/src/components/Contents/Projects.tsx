@@ -12,13 +12,9 @@ import CreateProject from './CreateProject';
 import { ProjectContributorsEnt, ProjectEnt } from '../../interfaces/ProjectEnt';
 import { Add } from '@styled-icons/fluentui-system-filled';
 import TextBox from '../TextBox';
-import { getUserEntByUserId } from '../../firebase';
+import { getProjectsByProjectId, getUserEntByUserId, setupPrimaryEntityListener } from '../../firebase';
 import UserAvatar from '../UserAvatar';
 import { useUser } from '../../contexts/UserContext';
-import { useAuth } from '../../contexts/AuthContext';
-import { UserEnt } from '../../interfaces/UserEnt';
-
-
 
 const Projects: React.FC = () => {
     const {
@@ -26,7 +22,6 @@ const Projects: React.FC = () => {
         setViewedEntity,
         primaryEntity
     } = useUser();
-    const { user } = useAuth();
     const [currentTab, setCurrentTab] = useState<string>('live');
     const [previousPath, setPreviousPath] = useState<string>("");
     const [projects, setProjects] = useState<ProjectEnt[]>([]);
@@ -38,6 +33,16 @@ const Projects: React.FC = () => {
 
     const navigate = useNavigate();
     const location = useLocation();
+
+    useEffect(() => {
+        const handlePopstate = () => {
+            window.location.reload();
+        };
+        window.addEventListener('popstate', handlePopstate);
+        return () => {
+            window.removeEventListener('popstate', handlePopstate);
+        };
+    }, []);
 
     useEffect(() => {
         // This is to enable the back button to take back to previous path
@@ -59,70 +64,35 @@ const Projects: React.FC = () => {
         }
 
         const fetchProjects = async () => {
+            if (!viewedEntity?.id) return;
+
             // Check if viewed entity is primary or other
             const isPrimaryAndViewedEntitySame = primaryEntity?.id === viewedEntity?.id;
             setIsPrimaryAndViewedEntitySame(isPrimaryAndViewedEntitySame);
 
-            const newprojects: ProjectEnt[] = [
-                {
-                    id: '1',
-                    data: {
-                        title: "Advanced AI System: J.A.R.V.I.S 2.0",
-                        description: "Develop an advanced artificial intelligence system to upgrade J.A.R.V.I.S. Enhance its capabilities in natural language processing, pattern recognition, and decision-making algorithms. Enable J.A.R.V.I.S to provide even more intuitive and efficient assistance to Tony Stark, from managing his suits and equipment to analyzing complex scientific data.",
-                        startedOn: '2022-10-10',
-                        status: 'live',
-                        contributors: [{
-                            id: 'DtOT6QEftzcbMeqSOhxcW2q9vLm1',
-                            data: {
-                                contributorId: 'DtOT6QEftzcbMeqSOhxcW2q9vLm1',
-                                username: 'thespidey',
-                                firstName: 'Peter',
-                                lastName: 'Parker',
-                            },
-                        }, {
-                            id: 'S2Dt4hRaLfTxnnxX0iw0q4hVrCw2',
-                            data: {
-                                contributorId: 'S2Dt4hRaLfTxnnxX0iw0q4hVrCw2',
-                                username: 'brucethebat',
-                                firstName: 'Bruce',
-                                lastName: 'Banner',
-                                profileImageUrl: 'https://firebasestorage.googleapis.com/v0/b/unaxed-b2a7e.appspot.com/o/profile_images%2FS2Dt4hRaLfTxnnxX0iw0q4hVrCw2?alt=media&token=c76810ed-8d94-4548-a32e-20138aa9132f',
-                            }
-                        }]
-                    }
-                },
-                {
-                    id: '2',
-                    data: {
-                        title: "Next-Generation Suit Technology: Mark XLV",
-                        description: "Create the next iteration of Iron Man's suit, Mark XLV, with cutting-edge technologies. Incorporate advanced materials for enhanced protection, propulsion systems for increased flight capabilities, and integrated weapon systems for improved combat effectiveness. Develop a streamlined user interface and advanced HUD (Heads-Up Display) for better situational awareness.",
-                        startedOn: '2023-02-10',
-                        status: 'live',
-                        contributors: [{
-                            id: 'DtOT6QEftzcbMeqSOhxcW2q9vLm1',
-                            data: {
-                                contributorId: 'DtOT6QEftzcbMeqSOhxcW2q9vLm1',
-                                username: 'thespidey',
-                                firstName: 'Peter',
-                                lastName: 'Parker',
-                            },
-                        }, {
-                            id: 'S2Dt4hRaLfTxnnxX0iw0q4hVrCw2',
-                            data: {
-                                contributorId: 'S2Dt4hRaLfTxnnxX0iw0q4hVrCw2',
-                                username: 'brucethebat',
-                                firstName: 'Bruce',
-                                lastName: 'Banner',
-                                profileImageUrl: 'https://firebasestorage.googleapis.com/v0/b/unaxed-b2a7e.appspot.com/o/profile_images%2FS2Dt4hRaLfTxnnxX0iw0q4hVrCw2?alt=media&token=c76810ed-8d94-4548-a32e-20138aa9132f',
-                            }
-                        }]
-                    }
-                },
-            ]
+            /* Fetch projects from the database by user ids (projects.data.contributors[..].id) */
+            // Get all the project IDs for the viewed Ent
+            const projectIds = viewedEntity?.data?.projects || [];
+
+            console.log("Project IDs: ", projectIds);
+            
+            // Get all the projects for the viewed Ent
+            const projectsList = await Promise.all(projectIds.map(async (projectId) => {
+                const project = await getProjectsByProjectId(projectId);
+                return project;
+            }));
+
+            console.log("Projects: ", projectsList);
+
+            // First fetch synchronously for the primary user so that the data is available to view immediately
+            // const primaryUserProjectIds = await getProjectsByUserId(viewedEntity?.id);
+            // console.log("projects: ", primaryUserProjectIds);
+
 
             // First collect the list of unique contributors from the list of projects
             const contributors: ProjectContributorsEnt[] = [];
-            newprojects.forEach((project) => {
+            projectsList.forEach((project) => {
+                if(!project.data.contributors) return;
                 project.data.contributors.forEach((contributor) => {
                     const existingContributor = contributors.find((c) => c.id === contributor.id);
                     if (!existingContributor) {
@@ -144,14 +114,26 @@ const Projects: React.FC = () => {
                     };
                 })
             );
-            
+
             setContributorsData(contributorsData);
-            setProjects(newprojects);
+            setProjects(projectsList);
             setCachedData(true); // Cache the data
             setLoading(false);
         }
         fetchProjects();
-    }, [previousPath, navigate]);
+
+        // Setup viewed entity listener
+        // This listener makes sure that the viewed entity is always up-to-date.
+        // Because we always want to show the latest data for the viewed entity. 
+        // Non viewed Ents can update their data in the background.(asynchronously)
+        const unsubscribe = setupPrimaryEntityListener(viewedEntity?.id, setViewedEntity);
+
+        return () => {
+            if (unsubscribe) {
+                unsubscribe();
+            }
+        };
+    }, [previousPath, navigate, viewedEntity?.id, primaryEntity?.id, setViewedEntity, primaryEntity?.data]);
 
     const handleTabChange = (type: string) => {
         setCurrentTab(type);
@@ -178,13 +160,10 @@ const Projects: React.FC = () => {
         setIsModalOpen(false);
     }
 
-    const handleCreate = () => {
-        // setProjects([...projects, project]);
-        closeModal();
-    }
-
+    // console.log("PRimary: ", primaryEntity);
 
     const ProjectItem = ({ project }: { project: ProjectEnt }) => {
+        console.log("Project: ", project);
         return (
             <div className="project-item-container">
                 <div className="item">
@@ -195,21 +174,26 @@ const Projects: React.FC = () => {
                     <TextBox content={project.data.description} maxLength={200} />
                 </div>
                 <div className="item">
-                    <div className="subheading">Contributors</div>
-                    <div className="contributors-container">
-                        {project.data.contributors.map((contributor) => {
-                            const contributorData = contributor.data;
-                            return (
-                                <UserAvatar key={contributorData.username} firstName={contributorData.firstName} lastName={contributorData.lastName} profileImageUrl={contributorData.profileImageUrl} username={contributorData.username} size={42} />
-                            )
-                        })}
-                    </div>
+                    {project.data.contributors.length > 0 && (
+                        <>
+                            <div className="subheading">Contributors</div>
+                            <div className="contributors-container">
+                                {project.data.contributors.map((contributor) => {
+                                    const contributorData = contributor.data;
+                                    return (
+                                        <UserAvatar key={contributorData.username} firstName={contributorData.firstName} lastName={contributorData.lastName} profileImageUrl={contributorData.profileImageUrl} username={contributorData.username} size={42} />
+                                    )
+                                })}
+                            </div>
+                        </>
+                    )}
+                   
                 </div>
             </div>
         )
     }
 
-    const renderProjectsForPrimary = () => {
+    const renderProjects = () => {
         const filteredProjects = projects.filter(
             (project) => project.data.status === currentTab
         );
@@ -227,8 +211,6 @@ const Projects: React.FC = () => {
             </div>
         ));
     };
-
-    console.log("Projects: ", projects);
 
     return (
         <div className="projects-container">
@@ -271,27 +253,29 @@ const Projects: React.FC = () => {
                                     isActive={currentTab === 'parked'}
                                 />
                             </li>
-                            <li>
-                                <ButtonWithIcon
-                                    className="create-project-btn"
-                                    icon={<Add className="project-icon" size={20} />}
-                                    iconPosition="left"
-                                    onClick={startCreate}
-                                />
-                            </li>
+                            <div className="spacer"></div>
+                            {isPrimaryAndViewedEntitySame && (
+                                <li>
+                                    <ButtonWithIcon
+                                        className="create-project-btn"
+                                        icon={<Add className="project-icon" size={20} />}
+                                        iconPosition="left"
+                                        onClick={startCreate}
+                                    />
+                                </li>
+                            )}
+                           
                         </ul>
                     </div>
 
                     <div className="create-project-container">
 
                     </div>
-
+                    <div className="projects-list">
+                        {renderProjects()}
+                    </div>
                     {isPrimaryAndViewedEntitySame && (
                         <>
-                            <div className="projects-list">
-                                {renderProjectsForPrimary()}
-                            </div>
-
                             <Modal isOpen={isModalOpen} onRequestClose={closeModal}>
                                 <CreateProject onClose={closeModal} setProjects={setProjects} />
                             </Modal>
