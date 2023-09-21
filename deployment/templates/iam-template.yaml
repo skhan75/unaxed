@@ -1,0 +1,45 @@
+Resources:
+  UnaxedIAMAdminUser:
+    Type: 'AWS::IAM::User'
+    Properties:
+      UserName: UxdAdminUser
+
+  UnaxedIAMAdminUserPolicy:
+    Type: 'AWS::IAM::Policy'
+    Properties:
+      PolicyName: "UnaxedAdminPolicies"
+      Users:
+        - Ref: UnaxedIAMAdminUser
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: "Allow"
+            Action:
+              # CloudFormation permissions
+              - "cloudformation:CreateStack"
+              - "cloudformation:DeleteStack"
+              - "cloudformation:DescribeStacks"
+              - "cloudformation:UpdateStack"
+              - "cloudformation:ValidateTemplate"
+              # RDS permissions for Aurora
+              - "rds:CreateDBCluster"
+              - "rds:DeleteDBCluster"
+              - "rds:DescribeDBClusters"
+              - "rds:ModifyDBCluster"
+              - "rds:CreateDBInstance"
+              - "rds:DeleteDBInstance"
+              - "rds:DescribeDBInstances"
+              - "rds:ModifyDBInstance"
+              - "rds:CreateDBParameterGroup"
+              - "rds:CreateDBClusterParameterGroup"
+              - "rds:DeleteDBParameterGroup"
+              - "rds:ModifyDBClusterParameterGroup"
+              - "rds:DescribeDBParameterGroups"
+              - "rds:ModifyDBParameterGroup"
+              - "rds:ListTagsForResource"
+              - "rds:DescribeDBClusterParameters"
+              # Adding the missing permissions
+              - "rds:DeleteDBClusterParameterGroup"
+              - "rds:DescribeEngineDefaultClusterParameters"
+              - "rds:DescribeEngineDefaultParameters"
+            Resource: "*"
