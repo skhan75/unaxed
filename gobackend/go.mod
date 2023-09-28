@@ -3,10 +3,6 @@ module unaxed-server
 go 1.17
 
 require (
-<<<<<<< HEAD
-	github.com/gorilla/mux v1.8.0 // indirect
-	github.com/lib/pq v1.10.9 // indirect
-=======
 	github.com/ClickHouse/clickhouse-go v1.5.4 // indirect
 	github.com/aws/aws-sdk-go v1.45.14 // indirect
 	github.com/aws/aws-sdk-go-v2 v1.21.0 // indirect
@@ -58,5 +54,4 @@ require (
 	golang.org/x/text v0.13.0 // indirect
 	gopkg.in/ini.v1 v1.67.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
->>>>>>> 7446faf (Go backend with data scheme migration and DB connection)
 )

@@ -46,7 +46,7 @@ func main() {
 	// }
 
 	if err = m.Down(); err != nil {
-		if err != migrate.ErrNoChange  {
+		if err != migrate.ErrNoChange {
 			log.Fatalf("Rollback failed: %s", err)
 		}
 	}
