@@ -1,3 +1,19 @@
+<<<<<<< HEAD
+=======
+AWSTemplateFormatVersion: '2010-09-09'
+Description: IAM User and Policies for Unaxed
+
+Parameters:
+  Region:
+    Description: AWS Region for resources
+    Type: String
+    Default: us-east-2
+
+  AccountId:
+    Description: AWS Account ID
+    Type: String
+
+>>>>>>> 7446faf (Go backend with data scheme migration and DB connection)
 Resources:
   UnaxedIAMAdminUser:
     Type: 'AWS::IAM::User'
@@ -21,7 +37,10 @@ Resources:
               - "cloudformation:DescribeStacks"
               - "cloudformation:UpdateStack"
               - "cloudformation:ValidateTemplate"
+<<<<<<< HEAD
               # RDS permissions for Aurora
+=======
+>>>>>>> 7446faf (Go backend with data scheme migration and DB connection)
               - "rds:CreateDBCluster"
               - "rds:DeleteDBCluster"
               - "rds:DescribeDBClusters"
@@ -38,8 +57,49 @@ Resources:
               - "rds:ModifyDBParameterGroup"
               - "rds:ListTagsForResource"
               - "rds:DescribeDBClusterParameters"
+<<<<<<< HEAD
               # Adding the missing permissions
               - "rds:DeleteDBClusterParameterGroup"
               - "rds:DescribeEngineDefaultClusterParameters"
               - "rds:DescribeEngineDefaultParameters"
             Resource: "*"
+=======
+              - "rds:DeleteDBClusterParameterGroup"
+              - "rds:DescribeEngineDefaultClusterParameters"
+              - "rds:DescribeEngineDefaultParameters"
+            Resource: "*"
+          - Effect: "Allow"
+            Action: 
+              - "sts:GetCallerIdentity"
+            Resource: "*"
+          - Effect: "Allow"
+            Action: "rds-db:connect"
+            Resource: !Sub "arn:aws:rds:${Region}:${AccountId}:dbuser:*/UnaxedAdminUser"
+          - Effect: "Allow"
+            Action: 
+              - "secretsmanager:GetSecretValue"
+            Resource: !Sub "arn:aws:secretsmanager:${Region}:${AccountId}:secret:dev/unaxed/*"  
+  
+  # Additional Resources for IAM Database Authentication
+  RDSDBAuthenticationRole:
+    Type: "AWS::IAM::Role"
+    Properties:
+      RoleName: "RDSIAMAuthenticationRole"
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: "Allow"
+            Principal:
+              Service:
+                - "rds.amazonaws.com"
+            Action:
+              - "sts:AssumeRole"
+      Policies:
+        - PolicyName: "RDSIAMAuthenticationPolicy"
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: "Allow"
+                Action: "rds-db:connect"
+                Resource: "*"
+>>>>>>> 7446faf (Go backend with data scheme migration and DB connection)
