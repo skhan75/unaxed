@@ -35,8 +35,6 @@ func main() {
 	// migrationsFullPath := "file://" + migrationsPath
 	migrationsFullPath := "file:///home/khansa/workspace/unaxed/gobackend/pkg/db/migrations/"
 
-	fmt.Printf(migrationsFullPath)
-
 	m, err := migrate.New(migrationsFullPath, "mysql://"+dsn)
 	if err != nil {
 		log.Fatalf("Migration failed to start: %s", err)
