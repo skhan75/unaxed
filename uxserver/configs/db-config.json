@@ -1,0 +1,5 @@
+{
+    "name": "UnaxedDB",
+    "host": "unaxedaurorastack-auroradbinstance-zxib6i8yemmj.c6pdbbxu24hb.us-east-2.rds.amazonaws.com",
+    "port": 3306
+}

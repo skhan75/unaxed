@@ -9,4 +9,3 @@ CREATE TABLE ux_dim_vouches (
     FOREIGN KEY (vouched_by_user_id) REFERENCES ux_dim_users(id),
     PRIMARY KEY(id)
 );
-        

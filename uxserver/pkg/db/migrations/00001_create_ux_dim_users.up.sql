@@ -12,4 +12,3 @@ CREATE TABLE ux_dim_users (
     country VARCHAR(255) NOT NULL,
     PRIMARY KEY(id)
 );
-        

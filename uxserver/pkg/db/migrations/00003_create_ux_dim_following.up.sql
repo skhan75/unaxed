@@ -6,4 +6,3 @@ CREATE TABLE ux_dim_following (
     FOREIGN KEY (following_id) REFERENCES ux_dim_users(id),
     FOREIGN KEY (user_id) REFERENCES ux_dim_users(id)
 );
-        

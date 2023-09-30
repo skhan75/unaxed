@@ -8,6 +8,6 @@
         "dbCredentialsPath": "dev/unaxed/db/aurora/credentials"
     },
     "migrations": {
-        "path": "../../pkg/db/migrations/"
+        "path": "./pkg/db/migrations/"
     }
 }

@@ -7,11 +7,6 @@ Parameters:
     MaxLength: '16'
     AllowedPattern: '[a-zA-Z][a-zA-Z0-9]*'
     ConstraintDescription: must begin with a letter and contain only alphanumeric characters.
-<<<<<<< HEAD
-  
-=======
-
->>>>>>> 7446faf (Go backend with data scheme migration and DB connection)
   Password:
     NoEcho: true
     Description: Password for Aurora MySQL database access
@@ -28,24 +23,6 @@ Resources:
       Engine: aurora-mysql
       MasterUsername: !Ref Username
       MasterUserPassword: !Ref Password
-<<<<<<< HEAD
-      DatabaseName: UnaxedDBMaster
-      DBClusterIdentifier: unaxed-db-cluster
-      DBClusterParameterGroupName:
-        Ref: RDSDBClusterParameterGroup
-      EngineMode: serverless
-      ScalingConfiguration:
-        AutoPause: true
-        MaxCapacity: 16  # maximum ACU, adjust as necessary
-        MinCapacity: 2   # minimum ACU, adjust as necessary
-        SecondsUntilAutoPause: 300 # adjust as necessary
-  
-  RDSDBClusterParameterGroup:
-    Type: 'AWS::RDS::DBClusterParameterGroup'
-    Properties:
-      Description: CloudFormation Sample Aurora Serverless Cluster Parameter Group
-      Family: aurora-mysql5.7 
-=======
       DatabaseName: UnaxedDB
       DBClusterIdentifier: Unaxed-DB-Cluster
       DBClusterParameterGroupName: !Ref RDSDBClusterParameterGroup
@@ -64,22 +41,14 @@ Resources:
     Properties:
       Description: CloudFormation Sample Aurora Cluster Parameter Group
       Family: aurora-mysql8.0
->>>>>>> 7446faf (Go backend with data scheme migration and DB connection)
       Parameters:
         time_zone: US/Eastern
 
   RDSDBParameterGroup:
-<<<<<<< HEAD
-    Type: 'AWS::RDS::DBParameterGroup'
-    Properties:
-      Description: CloudFormation Sample Aurora Serverless Parameter Group
-      Family: aurora-mysql5.7
-=======
     Type: AWS::RDS::DBParameterGroup
     Properties:
       Description: CloudFormation Sample Aurora Parameter Group
       Family: aurora-mysql8.0
->>>>>>> 7446faf (Go backend with data scheme migration and DB connection)
       Parameters:
         sql_mode: IGNORE_SPACE
         max_allowed_packet: '1024'

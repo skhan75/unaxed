@@ -9,4 +9,3 @@ CREATE TABLE ux_fact_reactions (
     FOREIGN KEY (user_id) REFERENCES ux_dim_users(id),
     PRIMARY KEY(id)
 );
-        

@@ -8,4 +8,3 @@ CREATE TABLE ux_fact_showcase (
     FOREIGN KEY (user_id) REFERENCES ux_dim_users(id),
     PRIMARY KEY(id)
 );
-        

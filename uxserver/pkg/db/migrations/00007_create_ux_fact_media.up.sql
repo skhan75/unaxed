@@ -8,4 +8,3 @@ CREATE TABLE ux_fact_media (
     media_caption TEXT,
     PRIMARY KEY(id)
 );
-        
