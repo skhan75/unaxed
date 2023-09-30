@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"log"
 	"unaxed-server/pkg/database"
@@ -12,6 +13,10 @@ import (
 )
 
 func main() {
+	// Command-line arguments
+	direction := flag.String("direction", "up", "Direction of migration ('up' or 'down')")
+	flag.Parse()
+
 	// Fetch the DSN
 	dsn, err := database.GetDBDataSourceName()
 	if err != nil {
@@ -36,18 +41,23 @@ func main() {
 		log.Fatalf("Migration failed to start: %s", err)
 	}
 
-	// Apply all up migrations
-	if err = m.Up(); err != nil {
-		log.Fatalf("Migration failed: %s", err)
+	// Apply migrations based on the direction specified
+	switch *direction {
+	case "up":
+		if err = m.Up(); err != nil {
+			log.Fatalf("Migration failed: %s", err)
+		}
+		fmt.Println("Migration completed successfully")
+	case "down":
+		if err = m.Down(); err != nil {
+			if err != migrate.ErrNoChange {
+				log.Fatalf("Rollback failed: %s", err)
+			}
+		}
+		fmt.Println("Rollback completed successfully")
+	default:
+		log.Fatalf("Invalid migration direction: %s. Use 'up' or 'down'", *direction)
 	}
-	fmt.Println("Migration completed successfully")
-
-	// if err = m.Down(); err != nil {
-	// 	if err != migrate.ErrNoChange {
-	// 		log.Fatalf("Rollback failed: %s", err)
-	// 	}
-	// }
-	// fmt.Println("Rollback completed successfully")
 }
 
 // package main
