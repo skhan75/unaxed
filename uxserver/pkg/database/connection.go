@@ -9,6 +9,27 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 )
 
+// db singleton
+var dbInstance *sql.DB
+
+func GetDB() (*sql.DB, error) {
+	if dbInstance != nil {
+		return dbInstance, nil
+	}
+
+	dsn, err := GetDBDataSourceName()
+	if err != nil {
+		return nil, err
+	}
+
+	dbInstance, err = GetDBConnection(dsn)
+	if err != nil {
+		return nil, err
+	}
+
+	return dbInstance, nil
+}
+
 func GetDBDataSourceName() (string, error) {
 	// Load secrets configuration to get the path for DB credentials
 	secretsConfig, err := utils.LoadSecretsConfig()
