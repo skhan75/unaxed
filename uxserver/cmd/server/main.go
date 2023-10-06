@@ -1,31 +1,19 @@
 package main
 
 import (
-	"fmt"
 	"log"
 	"unaxed-server/pkg/database"
-	"unaxed-server/pkg/models"
 )
 
 func main() {
-	// Mock user data
-	user := &models.User{
-		Username:   "testUsername",
-		Password:   "testPassword",
-		Email:      "test@email.com",
-		FirstName:  "Test",
-		MiddleName: "T",
-		LastName:   "User",
-		Bio:        "This is a test user bio",
-		City:       "TestCity",
-		Country:    "TestCountry",
-	}
-
-	// Try to create the user in the database
-	err := database.CreateUser(user)
+	dsn, err := database.GetDBDataSourceName()
 	if err != nil {
-		log.Fatalf("Error creating user: %v", err)
+		log.Fatalf("Failed to get DSN: %v", err)
 	}
+	db, err := database.GetConnection(dsn)
+	if err != nil {
+		log.Fatalf("Failed to initialize database: %v", err)
+	}
+	defer db.DB.Close()
 
-	fmt.Println("User created successfully!")
 }

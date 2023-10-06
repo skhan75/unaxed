@@ -4,16 +4,34 @@ import (
 	"database/sql"
 	"fmt"
 	"os"
+	"time"
 	"unaxed-server/pkg/secrets"
 	"unaxed-server/utils"
 
 	_ "github.com/go-sql-driver/mysql"
 )
 
-// db singleton
-var dbInstance *sql.DB
+type Database struct {
+	DB *sql.DB
+}
 
-func GetDB() (*sql.DB, error) {
+// db singleton
+var dbInstance *Database
+
+func GetConnection(dsn string) (*Database, error) {
+	db, err := sql.Open("mysql", dsn)
+	if err != nil {
+		return nil, err
+	}
+
+	db.SetMaxOpenConns(25)
+	db.SetMaxIdleConns(25)
+	db.SetConnMaxLifetime(5 * time.Minute)
+
+	return &Database{DB: db}, nil
+}
+
+func GetDB() (*Database, error) {
 	if dbInstance != nil {
 		return dbInstance, nil
 	}
@@ -23,7 +41,7 @@ func GetDB() (*sql.DB, error) {
 		return nil, err
 	}
 
-	dbInstance, err = GetDBConnection(dsn)
+	dbInstance, err = GetConnection(dsn)
 	if err != nil {
 		return nil, err
 	}
@@ -71,18 +89,18 @@ func GetDBDataSourceName() (string, error) {
 	return BuildDBURL(username, password, dbConfig.Host, dbConfig.Port, dbConfig.Name), nil
 }
 
-func GetDBConnection(dsn string) (*sql.DB, error) {
-	db, err := sql.Open("mysql", dsn)
-	if err != nil {
-		return nil, err
-	}
+// func GetDBConnection(dsn string) (*sql.DB, error) {
+// 	db, err := sql.Open("mysql", dsn)
+// 	if err != nil {
+// 		return nil, err
+// 	}
 
-	if err := db.Ping(); err != nil {
-		return nil, err
-	}
+// 	if err := db.Ping(); err != nil {
+// 		return nil, err
+// 	}
 
-	return db, nil
-}
+// 	return db, nil
+// }
 
 func BuildDBURL(username, password, host string, port int, dbName string) string {
 	return fmt.Sprintf("%s:%s@tcp(%s:%d)/%s",
