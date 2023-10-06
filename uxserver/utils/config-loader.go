@@ -61,8 +61,15 @@ func LoadDBConfig() (*DBConfig, error) {
 		return nil, err
 	}
 
-	// Construct the full path to the DB config
-	path := rootPath + getConfigPath("UNAXED_DB_CONFIG_PATH", defaultDBConfigPath)
+	// Determine the environment
+	env := os.Getenv("UNAXED_ENV")
+	var path string
+	if env == "localhost" || env == "local" {
+		path = rootPath + getConfigPath("UNAXED_DB_CONFIG_PATH", "configs/db-config.local.json")
+	} else {
+		path = rootPath + getConfigPath("UNAXED_DB_CONFIG_PATH", defaultDBConfigPath)
+	}
+
 	if err := loadConfig(path, &dbConfig); err != nil {
 		return nil, err
 	}

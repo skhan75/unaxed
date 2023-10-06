@@ -59,28 +59,3 @@ func main() {
 		log.Fatalf("Invalid migration direction: %s. Use 'up' or 'down'", *direction)
 	}
 }
-
-// package main
-
-// import (
-// 	"fmt"
-// 	"log"
-
-// 	"github.com/spf13/cobra"
-// )
-
-// var rootCmd = &cobra.Command{
-// 	Use:   "migrate",
-// 	Short: "Migration CLI tool for UnaxedDB",
-// }
-
-// func Execute() {
-// 	if err := rootCmd.Execute(); err != nil {
-// 		log.Fatalf("Error: %s", err)
-// 	}
-// }
-
-// func main() {
-// 	fmt.Printf("HIII")
-// 	Execute()
-// }

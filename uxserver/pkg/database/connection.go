@@ -3,6 +3,7 @@ package database
 import (
 	"database/sql"
 	"fmt"
+	"os"
 	"unaxed-server/pkg/secrets"
 	"unaxed-server/utils"
 
@@ -31,25 +32,43 @@ func GetDB() (*sql.DB, error) {
 }
 
 func GetDBDataSourceName() (string, error) {
-	// Load secrets configuration to get the path for DB credentials
-	secretsConfig, err := utils.LoadSecretsConfig()
-	if err != nil {
-		return "", fmt.Errorf("failed to load secrets config: %s", err)
+	var username, password string
+
+	// Check for localhost environment
+	env := os.Getenv("UNAXED_ENV")
+	if env == "localhost" || env == "local" {
+		// Use local DB credentials from environment variables
+		username = os.Getenv("UNAXED_DB_USERNAME")
+		password = os.Getenv("UNAXED_DB_PASSWORD")
+
+		if username == "" || password == "" {
+			return "", fmt.Errorf("local DB credentials not found in environment variables")
+		}
+
+	} else {
+		// Load secrets configuration to get the path for DB credentials
+		secretsConfig, err := utils.LoadSecretsConfig()
+		if err != nil {
+			return "", fmt.Errorf("failed to load secrets config: %s", err)
+		}
+
+		// Fetch credentials and configurations from secrets manager
+		dbCredentials, err := secrets.GetDBCredentials(secretsConfig.DBCredentialsPath)
+		if err != nil {
+			return "", fmt.Errorf("failed to get DB secrets: %s", err)
+		}
+
+		username = dbCredentials.Username
+		password = dbCredentials.Password
 	}
 
-	// Fetch credentials and configurations from secrets manager
-	dbCredentials, err := secrets.GetDBCredentials(secretsConfig.DBCredentialsPath)
-	if err != nil {
-		return "", fmt.Errorf("failed to get DB secrets: %s", err)
-	}
-
-	// Load DB configuration to get host, port, etc.
+	// Load DB configuration to get host, port, etc. (common for both localhost and production)
 	dbConfig, err := utils.LoadDBConfig()
 	if err != nil {
 		return "", fmt.Errorf("failed to load DB config: %s", err)
 	}
 
-	return BuildDBURL(dbCredentials.Username, dbCredentials.Password, dbConfig.Host, dbConfig.Port, dbConfig.Name), nil
+	return BuildDBURL(username, password, dbConfig.Host, dbConfig.Port, dbConfig.Name), nil
 }
 
 func GetDBConnection(dsn string) (*sql.DB, error) {
