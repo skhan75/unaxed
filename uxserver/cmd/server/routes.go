@@ -36,7 +36,7 @@ func SetupRouter(db *database.Database, authService *auth.AuthService) *gin.Engi
 		currentUserRoutes.Use(authMiddleware)
 		currentUserRoutes.GET("/", userHandler.GetCurrentUserDetails)
 		// currentUserRoutes.PUT("/update", userHandler.UpdateCurrentUser)
-		// currentUserRoutes.DELETE("/delete", userHandler.DeleteCurrentUser)
+		currentUserRoutes.DELETE("/delete", userHandler.DeleteCurrentUser)
 	}
 
 	showcaseHandler := handlers.NewShowcaseHandler(db)

@@ -126,6 +126,30 @@ func (database *Database) DeleteUser(username string) error {
 	return nil
 }
 
+func (database *Database) DeleteUserByID(userID string) error {
+	stmt, err := database.DB.Prepare("DELETE FROM ux_dim_users WHERE id = ?")
+	if err != nil {
+		return err
+	}
+	defer stmt.Close()
+
+	result, err := stmt.Exec(userID)
+	if err != nil {
+		return err
+	}
+
+	// Check if a row was actually deleted
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		return err
+	}
+	if rowsAffected == 0 {
+		return errors.New("no user found with the provided username")
+	}
+
+	return nil
+}
+
 func (database *Database) AuthenticateUser(username, password string) (*models.User, error) {
 	// Retrieve user with password
 	user, err := database.getUserWithPassword(username)

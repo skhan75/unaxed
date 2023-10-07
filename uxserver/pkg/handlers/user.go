@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"fmt"
 	"net/http"
 	"strconv"
 	"unaxed-server/pkg/auth"
@@ -94,6 +93,22 @@ func (h *UserHandler) GetCurrentUserDetails(c *gin.Context) {
 	c.JSON(http.StatusOK, currentUser)
 }
 
+func (h *UserHandler) DeleteCurrentUser(c *gin.Context) {
+	// Get the currently authenticated user's username or user ID from the authentication token
+	currentUserID, err := h.AuthService.GetCurrentUserIDFromToken(c)
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
+		return
+	}
+
+	if err := h.DB.DeleteUserByID(currentUserID); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to delete user"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "User deleted successfully"})
+}
+
 // DeleteUser handles the deletion of a user.
 func (h *UserHandler) DeleteUser(c *gin.Context) {
 	username := c.Param("username")
@@ -108,7 +123,6 @@ func (h *UserHandler) DeleteUser(c *gin.Context) {
 
 // LoginUser handles user authentication and generates a JWT token upon successful login.
 func (h *UserHandler) LoginUser(c *gin.Context) {
-	fmt.Print("HERE")
 	var loginRequest struct {
 		Username string `json:"username" binding:"required"`
 		Password string `json:"password" binding:"required"`
