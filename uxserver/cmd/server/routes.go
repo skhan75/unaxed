@@ -1,10 +1,24 @@
 package main
 
-import "github.com/gin-gonic/gin"
+import (
+	"unaxed-server/pkg/auth"
+	"unaxed-server/pkg/database"
+	"unaxed-server/pkg/handlers"
 
-func SetupRouter() *gin.Engine {
+	"github.com/gin-gonic/gin"
+)
+
+func SetupRouter(db *database.Database, authService *auth.AuthService) *gin.Engine {
 	r := gin.Default()
-	r.POST("/register", RegisterUser)
-	// ... other routes
+
+	r.GET("/", handlers.RootHandler)
+
+	userHandler := handlers.NewUserHandler(db, authService)
+	userRoutes := r.Group("/users")
+	{
+		userRoutes.POST("/create", userHandler.CreateUser)
+		userRoutes.GET("/:username", userHandler.GetUserDetails)
+	}
+
 	return r
 }

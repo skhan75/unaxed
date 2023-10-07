@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"fmt"
 	"os"
 
 	"github.com/spf13/viper"
@@ -65,7 +66,9 @@ func LoadDBConfig() (*DBConfig, error) {
 	env := os.Getenv("UNAXED_ENV")
 	var path string
 	if env == "localhost" || env == "local" {
-		path = rootPath + getConfigPath("UNAXED_DB_CONFIG_PATH", "configs/db-config.local.json")
+		fmt.Printf("Fetching config for local host..\n\n")
+		path = rootPath + "configs/db-config.local.json"
+		fmt.Printf("Path - %s\n", path)
 	} else {
 		path = rootPath + getConfigPath("UNAXED_DB_CONFIG_PATH", defaultDBConfigPath)
 	}
