@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"net/http"
+	"strconv"
 	"unaxed-server/pkg/auth"
 	"unaxed-server/pkg/database"
 	"unaxed-server/pkg/models"
@@ -91,4 +92,35 @@ func (h *UserHandler) DeleteUser(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{"message": "User deleted successfully"})
+}
+
+// LoginUser handles user authentication and generates a JWT token upon successful login.
+func (h *UserHandler) LoginUser(c *gin.Context) {
+	var loginRequest struct {
+		Username string `json:"username" binding:"required"`
+		Password string `json:"password" binding:"required"`
+	}
+
+	if err := c.ShouldBindJSON(&loginRequest); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	// Authenticate the user based on username and password using the AuthenticateUser method.
+	user, err := h.DB.AuthenticateUser(loginRequest.Username, loginRequest.Password)
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid credentials"})
+		return
+	}
+
+	// If authentication succeeds, generate a JWT token for the user.
+	token, err := h.AuthService.GenerateToken(strconv.FormatInt(user.ID, 10))
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to generate token"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"Authorization": "Bearer " + token,
+	})
 }

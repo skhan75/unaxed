@@ -21,6 +21,34 @@ func NewAuthService(secretKey []byte) *AuthService {
 	}
 }
 
+func (s *AuthService) GenerateToken(userID string) (string, error) {
+	// Create a new token with relevant claims (e.g., user ID)
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+		"user_id": userID,
+	})
+
+	// Sign the token with the secret key
+	tokenString, err := token.SignedString(s.SecretKey)
+	if err != nil {
+		return "", err
+	}
+
+	return tokenString, nil
+}
+
+func (s *AuthService) ParseToken(tokenString string) (*jwt.Token, error) {
+	// Parse the token with the secret key
+	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+		// Check the token signing method
+		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, errors.New("Invalid token signing method")
+		}
+		return s.SecretKey, nil
+	})
+
+	return token, err
+}
+
 func (s *AuthService) GetCurrentUserIDFromToken(c *gin.Context) (string, error) {
 	// Get the Authorization header from the request
 	authorizationHeader := c.GetHeader("Authorization")

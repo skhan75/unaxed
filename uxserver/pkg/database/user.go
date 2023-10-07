@@ -90,21 +90,21 @@ func (database *Database) DeleteUser(username string) error {
 	return nil
 }
 
-func (database *Database) AuthenticateUser(username, password string) (bool, error) {
+func (database *Database) AuthenticateUser(username, password string) (*models.User, error) {
 	// Retrieve user with password
 	user, err := database.getUserWithPassword(username)
 	if err != nil {
-		return false, err
+		return nil, err
 	}
 
 	// Compare hash of provided password with the stored hash
 	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password))
 	if err != nil {
 		if errors.Is(err, bcrypt.ErrMismatchedHashAndPassword) {
-			return false, nil // Return false if hash and password don't match
+			return nil, errors.New("Invalid password") // Return error if hash and password don't match
 		}
-		return false, err
+		return nil, err
 	}
 
-	return true, nil // Return true if they match
+	return user, nil // Return the user if they match
 }

@@ -1,23 +1,22 @@
 package main
 
 import (
-	"crypto/rand"
-	"encoding/base64"
 	"fmt"
 	"log"
 	"os"
 	"unaxed-server/pkg/auth"
 	"unaxed-server/pkg/database"
+
+	"github.com/joho/godotenv"
 )
 
 func main() {
-	keyLength := 32 // 256 bits
-	secretKey, err := generateRandomSecretKey(keyLength)
-	if err != nil {
-		log.Fatalf("Failed to generate secret key: %v", err)
+	// Load environment variables from .env file
+	if err := godotenv.Load(); err != nil {
+		log.Fatalf("Error loading .env file: %v", err)
 	}
 
-	fmt.Println("Generated Secret Key:", secretKey)
+	secretKey := os.Getenv("SECRET_KEY")
 
 	env := os.Getenv("UNAXED_ENV")
 	if env == "localhost" || env == "local" {
@@ -37,6 +36,10 @@ func main() {
 	authKey := []byte(secretKey) // Replace with your actual secret key
 	authService := auth.NewAuthService(authKey)
 
+	// // Initialize the TokenManager with your secret key
+	// tokenKey := []byte(secretKey) // Replace with your actual secret key
+	// tokenManager := auth.NewTokenManager(tokenKey)
+
 	r := SetupRouter(db, authService)
 
 	// Start the server on port 8080
@@ -44,19 +47,19 @@ func main() {
 	r.Run(":8080")
 }
 
-func generateRandomSecretKey(keyLength int) (string, error) {
-	// Generate random bytes
-	keyBytes := make([]byte, keyLength)
-	_, err := rand.Read(keyBytes)
-	if err != nil {
-		return "", err
-	}
+// func generateRandomSecretKey(keyLength int) (string, error) {
+// 	// Generate random bytes
+// 	keyBytes := make([]byte, keyLength)
+// 	_, err := rand.Read(keyBytes)
+// 	if err != nil {
+// 		return "", err
+// 	}
 
-	// Encode the random bytes to a base64 string
-	encodedKey := base64.StdEncoding.EncodeToString(keyBytes)
+// 	// Encode the random bytes to a base64 string
+// 	encodedKey := base64.StdEncoding.EncodeToString(keyBytes)
 
-	return encodedKey, nil
-}
+// 	return encodedKey, nil
+// }
 
 // user := &models.User{
 // 	Username:   "testUsername",
@@ -78,3 +81,36 @@ func generateRandomSecretKey(keyLength int) (string, error) {
 // }
 
 // log.Println("User created successfully")
+
+// Generate a sample token
+// sampleUserID := "testUsername" // Replace with the actual user ID
+// sampleToken, err := tokenManager.GenerateToken(sampleUserID)
+// if err != nil {
+// 	log.Fatalf("Failed to generate sample token: %v", err)
+// }
+
+// fmt.Println("Generated Sample Token:", sampleToken)
+
+// // Parse the sample token
+// parsedToken, err := tokenManager.ParseToken(sampleToken)
+// if err != nil {
+// 	log.Fatalf("Failed to parse sample token: %v", err)
+// }
+
+// // Check if the token is valid
+// if !parsedToken.Valid {
+// 	log.Fatalf("Sample token is not valid")
+// }
+
+// // Extract user ID from the token claims
+// claims, ok := parsedToken.Claims.(jwt.MapClaims)
+// if !ok {
+// 	log.Fatalf("Invalid token claims")
+// }
+
+// userID, ok := claims["user_id"].(string)
+// if !ok {
+// 	log.Fatalf("User ID not found in token")
+// }
+
+// fmt.Println("Extracted User ID:", userID)
