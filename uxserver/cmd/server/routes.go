@@ -5,6 +5,7 @@ import (
 	"unaxed-server/pkg/database"
 	"unaxed-server/pkg/handlers"
 
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 )
 
@@ -12,6 +13,12 @@ func SetupRouter(db *database.Database, authService *auth.AuthService) *gin.Engi
 	authMiddleware := auth.AuthMiddleware(authService)
 
 	r := gin.Default()
+
+	config := cors.DefaultConfig()
+	config.AllowOrigins = []string{"https://api.unaxed.com"}
+	config.AllowMethods = []string{"GET", "POST", "PUT", "DELETE"}
+	config.AllowHeaders = []string{"Origin", "Content-Type", "Authorization"}
+	r.Use(cors.New(config))
 
 	r.GET("/", handlers.RootHandler)
 

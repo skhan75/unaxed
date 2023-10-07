@@ -29,6 +29,25 @@ func (database *Database) CreateUser(user *models.User) error {
 	return err
 }
 
+func (database *Database) GetUserDetailsByID(userID string) (*models.User, error) {
+	stmt, err := database.DB.Prepare("SELECT id, username, email, first_name, middle_name, last_name, bio, city, country FROM ux_dim_users WHERE id = ?")
+	if err != nil {
+		return nil, err
+	}
+	defer stmt.Close()
+
+	var user models.User
+	err = stmt.QueryRow(userID).Scan(&user.ID, &user.Username, &user.Email, &user.FirstName, &user.MiddleName, &user.LastName, &user.Bio, &user.City, &user.Country)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, nil
+		}
+		return nil, err
+	}
+
+	return &user, nil
+}
+
 func (database *Database) GetUserDetails(username string) (*models.User, error) {
 	stmt, err := database.DB.Prepare("SELECT username, email, first_name, middle_name, last_name, bio, city, country FROM ux_dim_users WHERE username = ?")
 	if err != nil {

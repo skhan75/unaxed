@@ -80,7 +80,7 @@ func (h *UserHandler) GetCurrentUserDetails(c *gin.Context) {
 	}
 
 	// Fetch the user details from the database
-	currentUser, err := h.DB.GetUserDetails(currentUserID)
+	currentUser, err := h.DB.GetUserDetailsByID(currentUserID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch user details"})
 		return
