@@ -4,6 +4,7 @@ package database
 import (
 	"database/sql"
 	"errors"
+	"fmt"
 	"unaxed-server/pkg/models"
 
 	"golang.org/x/crypto/bcrypt"
@@ -64,14 +65,14 @@ func (database *Database) UsernameExists(username string) (bool, error) {
 }
 
 func (database *Database) getUserWithPassword(username string) (*models.User, error) {
-	stmt, err := database.DB.Prepare("SELECT username, password, email, first_name, middle_name, last_name, bio, city, country FROM ux_dim_users WHERE username = ?")
+	stmt, err := database.DB.Prepare("SELECT id, username, password, email, first_name, middle_name, last_name, bio, city, country FROM ux_dim_users WHERE username = ?")
 	if err != nil {
 		return nil, err
 	}
 	defer stmt.Close()
 
 	var user models.User
-	err = stmt.QueryRow(username).Scan(&user.Username, &user.Password, &user.Email, &user.FirstName, &user.MiddleName, &user.LastName, &user.Bio, &user.City, &user.Country)
+	err = stmt.QueryRow(username).Scan(&user.ID, &user.Username, &user.Password, &user.Email, &user.FirstName, &user.MiddleName, &user.LastName, &user.Bio, &user.City, &user.Country)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, nil // Not found
@@ -112,6 +113,8 @@ func (database *Database) AuthenticateUser(username, password string) (*models.U
 	if err != nil {
 		return nil, err
 	}
+
+	fmt.Printf("USER in AUTH  - %s\n\n", user.ID)
 
 	// Compare hash of provided password with the stored hash
 	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password))

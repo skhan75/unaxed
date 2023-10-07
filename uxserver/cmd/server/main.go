@@ -36,10 +36,6 @@ func main() {
 	authKey := []byte(secretKey) // Replace with your actual secret key
 	authService := auth.NewAuthService(authKey)
 
-	// // Initialize the TokenManager with your secret key
-	// tokenKey := []byte(secretKey) // Replace with your actual secret key
-	// tokenManager := auth.NewTokenManager(tokenKey)
-
 	r := SetupRouter(db, authService)
 
 	// Start the server on port 8080

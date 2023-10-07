@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"fmt"
 	"net/http"
 	"strconv"
 	"unaxed-server/pkg/auth"
@@ -107,6 +108,7 @@ func (h *UserHandler) DeleteUser(c *gin.Context) {
 
 // LoginUser handles user authentication and generates a JWT token upon successful login.
 func (h *UserHandler) LoginUser(c *gin.Context) {
+	fmt.Print("HERE")
 	var loginRequest struct {
 		Username string `json:"username" binding:"required"`
 		Password string `json:"password" binding:"required"`
@@ -131,7 +133,9 @@ func (h *UserHandler) LoginUser(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{
-		"Authorization": "Bearer " + token,
-	})
+	// Set the JWT token in the response header
+	c.Header("Authorization", "Bearer "+token)
+
+	// Respond with a success status code
+	c.JSON(http.StatusOK, gin.H{"message": "Login successful"})
 }
