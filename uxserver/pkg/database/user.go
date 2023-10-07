@@ -47,6 +47,22 @@ func (database *Database) GetUserDetails(username string) (*models.User, error) 
 	return &user, nil
 }
 
+func (database *Database) UsernameExists(username string) (bool, error) {
+	stmt, err := database.DB.Prepare("SELECT COUNT(*) FROM ux_dim_users WHERE username = ?")
+	if err != nil {
+		return false, err
+	}
+	defer stmt.Close()
+
+	var count int
+	err = stmt.QueryRow(username).Scan(&count)
+	if err != nil {
+		return false, err
+	}
+
+	return count > 0, nil
+}
+
 func (database *Database) getUserWithPassword(username string) (*models.User, error) {
 	stmt, err := database.DB.Prepare("SELECT username, password, email, first_name, middle_name, last_name, bio, city, country FROM ux_dim_users WHERE username = ?")
 	if err != nil {

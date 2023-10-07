@@ -32,6 +32,17 @@ func (h *UserHandler) CreateUser(c *gin.Context) {
 		return
 	}
 
+	// Check if the username already exists in the database
+	existingUser, err := h.DB.UsernameExists(user.Username)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to check username uniqueness"})
+		return
+	}
+	if existingUser {
+		c.JSON(http.StatusConflict, gin.H{"error": "Username already taken"})
+		return
+	}
+
 	if err := h.DB.CreateUser(&user); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create user"})
 		return
