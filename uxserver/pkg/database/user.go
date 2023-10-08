@@ -4,7 +4,6 @@ package database
 import (
 	"database/sql"
 	"errors"
-	"fmt"
 	"unaxed-server/pkg/models"
 
 	"golang.org/x/crypto/bcrypt"
@@ -67,6 +66,20 @@ func (database *Database) GetUserDetails(username string) (*models.User, error) 
 	return &user, nil
 }
 
+func (database *Database) UpdateCurrentUser(user *models.User) error {
+	stmt, err := database.DB.Prepare("UPDATE ux_dim_users SET first_name=?, middle_name=?, last_name=?, bio=?, city=?, country=? WHERE id=?")
+	if err != nil {
+		return err
+	}
+	defer stmt.Close()
+	_, err = stmt.Exec(user.FirstName, user.MiddleName, user.LastName, user.Bio, user.City, user.Country, user.ID)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (database *Database) UsernameExists(username string) (bool, error) {
 	stmt, err := database.DB.Prepare("SELECT COUNT(*) FROM ux_dim_users WHERE username = ?")
 	if err != nil {
@@ -83,7 +96,7 @@ func (database *Database) UsernameExists(username string) (bool, error) {
 	return count > 0, nil
 }
 
-func (database *Database) getUserWithPassword(username string) (*models.User, error) {
+func (database *Database) GetUserAndPassword(username string) (*models.User, error) {
 	stmt, err := database.DB.Prepare("SELECT id, username, password, email, first_name, middle_name, last_name, bio, city, country FROM ux_dim_users WHERE username = ?")
 	if err != nil {
 		return nil, err
@@ -152,12 +165,15 @@ func (database *Database) DeleteUserByID(userID string) error {
 
 func (database *Database) AuthenticateUser(username, password string) (*models.User, error) {
 	// Retrieve user with password
-	user, err := database.getUserWithPassword(username)
+	user, err := database.GetUserAndPassword(username)
 	if err != nil {
 		return nil, err
 	}
 
-	fmt.Printf("USER in AUTH  - %s\n\n", user.ID)
+	if user == nil {
+		// User does not exist
+		return nil, errors.New("User not found")
+	}
 
 	// Compare hash of provided password with the stored hash
 	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password))
