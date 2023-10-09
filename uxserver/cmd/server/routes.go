@@ -39,7 +39,7 @@ func SetupRouter(db *database.Database, authService *auth.AuthService) *gin.Engi
 		currentUserRoutes.DELETE("/delete", userHandler.DeleteCurrentUser)
 	}
 
-	showcaseHandler := handlers.NewShowcaseHandler(db)
+	showcaseHandler := handlers.NewShowcaseHandler(db, authService)
 	showcaseRoutes := r.Group("/showcases")
 	{
 		showcaseRoutes.Use(authMiddleware)
