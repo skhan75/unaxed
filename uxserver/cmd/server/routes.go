@@ -43,7 +43,7 @@ func SetupRouter(db *database.Database, authService *auth.AuthService) *gin.Engi
 	showcaseRoutes := r.Group("/showcases")
 	{
 		showcaseRoutes.Use(authMiddleware)
-		// showcaseRoutes.GET("/", showcaseHandler.GetAllShowcases)
+		showcaseRoutes.GET("/", showcaseHandler.GetAllShowcases)
 		showcaseRoutes.POST("/create", showcaseHandler.CreateShowcase)
 	}
 

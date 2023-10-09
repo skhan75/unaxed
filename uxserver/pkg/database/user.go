@@ -24,7 +24,17 @@ func (database *Database) CreateUser(user *models.User) error {
 	}
 	defer stmt.Close()
 
-	_, err = stmt.Exec(user.Username, user.Password, user.Email, user.FirstName, user.MiddleName, user.LastName, user.Bio, user.City, user.Country)
+	_, err = stmt.Exec(
+		user.Username,
+		user.Password,
+		user.Email,
+		user.FirstName,
+		user.MiddleName,
+		user.LastName,
+		user.Bio,
+		user.City,
+		user.Country,
+	)
 	return err
 }
 

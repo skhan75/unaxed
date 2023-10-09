@@ -20,9 +20,14 @@ func (database *Database) CreateShowcase(showcase *models.Showcase) error {
 		showcase.Description,
 		showcase.MediaURL,
 		showcase.Tags,
+		showcase.Likes,
+		showcase.Views,
+		showcase.Comments,
 		showcase.Privacy,
 		showcase.Latitude,
 		showcase.Longitude,
+		showcase.CreatedAt,
+		showcase.UpdatedAt,
 	)
 	return err
 }
