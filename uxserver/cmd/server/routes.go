@@ -5,7 +5,6 @@ import (
 	"unaxed-server/pkg/database"
 	"unaxed-server/pkg/handlers"
 
-	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 )
 
@@ -13,19 +12,22 @@ func SetupRouter(db *database.Database, authService *auth.AuthService) *gin.Engi
 	authMiddleware := auth.AuthMiddleware(authService)
 
 	r := gin.Default()
-
-	config := cors.DefaultConfig()
-	config.AllowOrigins = []string{"https://api.unaxed.com"}
-	config.AllowMethods = []string{"GET", "POST", "PUT", "DELETE"}
-	config.AllowHeaders = []string{"Origin", "Content-Type", "Authorization"}
-	r.Use(cors.New(config))
+	// config := cors.DefaultConfig()
+	// config.AllowOrigins = []string{
+	// 	"https://api.unaxed.com",
+	// 	"http://76.103.37.202:19000",
+	// }
+	// config.AllowMethods = []string{"GET", "POST", "PUT", "DELETE"}
+	// config.AllowHeaders = []string{"Origin", "Content-Type", "Authorization"}
+	// r.Use(cors.New(config))
 
 	r.GET("/", handlers.RootHandler)
 
 	userHandler := handlers.NewUserHandler(db, authService)
 	userRoutes := r.Group("/users")
 	{
-		userRoutes.POST("/create", userHandler.CreateUser)
+		userRoutes.POST("/register", userHandler.RegisterUser)
+		
 		userRoutes.POST("/login", userHandler.LoginUser)
 		userRoutes.GET("/:username", userHandler.GetUserDetails)
 	}
@@ -34,6 +36,7 @@ func SetupRouter(db *database.Database, authService *auth.AuthService) *gin.Engi
 	currentUserRoutes := r.Group("/user")
 	{
 		currentUserRoutes.Use(authMiddleware)
+		// userRoutes.POST("/create/profile", userHandler.UpdateUserProfile)
 		currentUserRoutes.GET("/", userHandler.GetCurrentUserDetails)
 		currentUserRoutes.PUT("/update", userHandler.UpdateCurrentUser)
 		currentUserRoutes.DELETE("/delete", userHandler.DeleteCurrentUser)

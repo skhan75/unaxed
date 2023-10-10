@@ -4,49 +4,96 @@ package database
 import (
 	"database/sql"
 	"errors"
+	"fmt"
 	"unaxed-server/pkg/models"
 
 	"golang.org/x/crypto/bcrypt"
 )
 
-func (database *Database) CreateUser(user *models.User) error {
-	// Hash the user's password using bcrypt
+// Registration related function
+func (database *Database) RegisterUser(user *models.User) error {
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.DefaultCost)
 	if err != nil {
 		return err
 	}
 	user.Password = string(hashedPassword)
+	fmt.Printf("username %s\n", user.Username)
+	fmt.Printf("password %s\n", user.Password)
 
-	// Use a prepared statement for insertion
-	stmt, err := database.DB.Prepare("INSERT INTO ux_dim_users (username, password, email, first_name, middle_name, last_name, bio, city, country) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)")
+	stmt, err := database.DB.Prepare("INSERT INTO ux_dim_users (username, password, email) VALUES (?, ?, ?)")
 	if err != nil {
 		return err
 	}
 	defer stmt.Close()
 
-	_, err = stmt.Exec(
-		user.Username,
-		user.Password,
-		user.Email,
-		user.FirstName,
-		user.MiddleName,
-		user.LastName,
-		user.Bio,
-		user.City,
-		user.Country,
-	)
+	fmt.Printf("Statement %v\n", stmt)
+	_, err = stmt.Exec(user.Username, user.Password, user.Email)
+	if err != nil {
+		fmt.Printf("Error while executing statement: %v", err)
+		return err
+	}
 	return err
 }
 
-func (database *Database) GetUserDetailsByID(userID string) (*models.User, error) {
+// UserProfile creation function
+func (database *Database) CreateUserProfile(userProfile *models.UserProfile) error {
+	stmt, err := database.DB.Prepare("UPDATE ux_dim_users SET first_name=?, middle_name=?, last_name=?, bio=?, city=?, country=? WHERE id=?")
+	if err != nil {
+		return err
+	}
+	defer stmt.Close()
+	_, err = stmt.Exec(userProfile.FirstName, userProfile.MiddleName, userProfile.LastName, userProfile.Bio, userProfile.City, userProfile.Country, userProfile.UserID)
+	return err
+}
+
+// func (database *Database) CreateUser(user *models.User) error {
+// 	// Hash the user's password using bcrypt
+// 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.DefaultCost)
+// 	if err != nil {
+// 		return err
+// 	}
+// 	user.Password = string(hashedPassword)
+
+// 	// Use a prepared statement for insertion
+// 	stmt, err := database.DB.Prepare("INSERT INTO ux_dim_users (username, password, email, first_name, middle_name, last_name, bio, city, country) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)")
+// 	if err != nil {
+// 		return err
+// 	}
+// 	defer stmt.Close()
+
+// 	_, err = stmt.Exec(
+// 		user.Username,
+// 		user.Password,
+// 		user.Email,
+// 		user.FirstName,
+// 		user.MiddleName,
+// 		user.LastName,
+// 		user.Bio,
+// 		user.City,
+// 		user.Country,
+// 	)
+// 	return err
+// }
+
+func (database *Database) GetUserDetailsByID(userID string) (*models.UserProfile, error) {
 	stmt, err := database.DB.Prepare("SELECT id, username, email, first_name, middle_name, last_name, bio, city, country FROM ux_dim_users WHERE id = ?")
 	if err != nil {
 		return nil, err
 	}
 	defer stmt.Close()
 
-	var user models.User
-	err = stmt.QueryRow(userID).Scan(&user.ID, &user.Username, &user.Email, &user.FirstName, &user.MiddleName, &user.LastName, &user.Bio, &user.City, &user.Country)
+	var userProfile models.UserProfile
+	err = stmt.QueryRow(userID).Scan(
+		&userProfile.UserID,
+		&userProfile.Username,
+		&userProfile.Email,
+		&userProfile.FirstName,
+		&userProfile.MiddleName,
+		&userProfile.LastName,
+		&userProfile.Bio,
+		&userProfile.City,
+		&userProfile.Country,
+	)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, nil
@@ -54,35 +101,74 @@ func (database *Database) GetUserDetailsByID(userID string) (*models.User, error
 		return nil, err
 	}
 
-	return &user, nil
+	return &userProfile, nil
 }
 
-func (database *Database) GetUserDetails(username string) (*models.User, error) {
-	stmt, err := database.DB.Prepare("SELECT username, email, first_name, middle_name, last_name, bio, city, country FROM ux_dim_users WHERE username = ?")
+func (database *Database) GetUserDetailsByUsername(username string) (*models.UserProfile, error) {
+	stmt, err := database.DB.Prepare("SELECT id, username, email, first_name, middle_name, last_name, bio, city, country FROM ux_dim_users WHERE username = ?")
 	if err != nil {
 		return nil, err
 	}
 	defer stmt.Close()
 
-	var user models.User
-	err = stmt.QueryRow(username).Scan(&user.Username, &user.Email, &user.FirstName, &user.MiddleName, &user.LastName, &user.Bio, &user.City, &user.Country)
+	var userProfile models.UserProfile
+	err = stmt.QueryRow(username).Scan(
+		&userProfile.UserID,
+		&userProfile.Username,
+		&userProfile.Email,
+		&userProfile.FirstName,
+		&userProfile.MiddleName,
+		&userProfile.LastName,
+		&userProfile.Bio,
+		&userProfile.City,
+		&userProfile.Country,
+	)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return nil, nil
+			return nil, nil // Not found
 		}
-		return nil, err
+		return nil, err // Other error
 	}
 
-	return &user, nil
+	return &userProfile, nil
 }
 
-func (database *Database) UpdateCurrentUser(user *models.User) error {
-	stmt, err := database.DB.Prepare("UPDATE ux_dim_users SET first_name=?, middle_name=?, last_name=?, bio=?, city=?, country=? WHERE id=?")
+// func (database *Database) GetUserDetails(username string) (*models.User, error) {
+// 	stmt, err := database.DB.Prepare("SELECT username, email, first_name, middle_name, last_name, bio, city, country FROM ux_dim_users WHERE username = ?")
+// 	if err != nil {
+// 		return nil, err
+// 	}
+// 	defer stmt.Close()
+
+// 	var user models.User
+// 	err = stmt.QueryRow(username).Scan(&user.Username, &user.Email, &user.FirstName, &user.MiddleName, &user.LastName, &user.Bio, &user.City, &user.Country)
+// 	if err != nil {
+// 		if err == sql.ErrNoRows {
+// 			return nil, nil
+// 		}
+// 		return nil, err
+// 	}
+
+// 	return &user, nil
+// }
+
+func (database *Database) UpdateCurrentUser(userProfile *models.UserProfile) error {
+	stmt, err := database.DB.Prepare("UPDATE ux_dim_users SET email=?, first_name=?, middle_name=?, last_name=?, bio=?, city=?, country=? WHERE id=?")
 	if err != nil {
 		return err
 	}
 	defer stmt.Close()
-	_, err = stmt.Exec(user.FirstName, user.MiddleName, user.LastName, user.Bio, user.City, user.Country, user.ID)
+
+	_, err = stmt.Exec(
+		userProfile.Email,
+		userProfile.FirstName,
+		userProfile.MiddleName,
+		userProfile.LastName,
+		userProfile.Bio,
+		userProfile.City,
+		userProfile.Country,
+		userProfile.UserID,
+	)
 	if err != nil {
 		return err
 	}
@@ -106,23 +192,23 @@ func (database *Database) UsernameExists(username string) (bool, error) {
 	return count > 0, nil
 }
 
-func (database *Database) GetUserAndPassword(username string) (*models.User, error) {
-	stmt, err := database.DB.Prepare("SELECT id, username, password, email, first_name, middle_name, last_name, bio, city, country FROM ux_dim_users WHERE username = ?")
+func (database *Database) getUserPassword(username string) (string, error) {
+	stmt, err := database.DB.Prepare("SELECT password FROM ux_dim_users WHERE username = ?")
 	if err != nil {
-		return nil, err
+		return "", err
 	}
 	defer stmt.Close()
 
-	var user models.User
-	err = stmt.QueryRow(username).Scan(&user.ID, &user.Username, &user.Password, &user.Email, &user.FirstName, &user.MiddleName, &user.LastName, &user.Bio, &user.City, &user.Country)
+	var password string
+	err = stmt.QueryRow(username).Scan(&password)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return nil, nil // Not found
+			return "", errors.New("invalid credentials")
 		}
-		return nil, err // Other error
+		return "", err // Other error
 	}
 
-	return &user, nil
+	return password, nil
 }
 
 func (database *Database) DeleteUser(username string) error {
@@ -173,26 +259,32 @@ func (database *Database) DeleteUserByID(userID string) error {
 	return nil
 }
 
-func (database *Database) AuthenticateUser(username, password string) (*models.User, error) {
-	// Retrieve user with password
-	user, err := database.GetUserAndPassword(username)
+func (database *Database) AuthenticateUser(username, password string) (*models.UserProfile, error) {
+	// Retrieve hashed password of the user
+	hashedPassword, err := database.getUserPassword(username)
 	if err != nil {
 		return nil, err
 	}
 
-	if user == nil {
+	if hashedPassword == "" {
 		// User does not exist
-		return nil, errors.New("User not found")
+		return nil, errors.New("user not found")
 	}
 
 	// Compare hash of provided password with the stored hash
-	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password))
+	err = bcrypt.CompareHashAndPassword([]byte(hashedPassword), []byte(password))
 	if err != nil {
 		if errors.Is(err, bcrypt.ErrMismatchedHashAndPassword) {
-			return nil, errors.New("Invalid password") // Return error if hash and password don't match
+			return nil, errors.New("invalid credential") // Return error if hash and password don't match
 		}
 		return nil, err
 	}
 
-	return user, nil // Return the user if they match
+	// If authentication is successful, retrieve the full user details
+	userDetails, err := database.GetUserDetailsByUsername(username)
+	if err != nil {
+		return nil, err
+	}
+
+	return userDetails, nil // Return the user if they match
 }

@@ -10,9 +10,13 @@ import (
 	migrate "github.com/golang-migrate/migrate/v4"
 	_ "github.com/golang-migrate/migrate/v4/database/mysql"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
+	"github.com/joho/godotenv"
 )
 
 func main() {
+	if err := godotenv.Load(); err != nil {
+		log.Fatalf("Error loading .env file: %v", err)
+	}
 	// Command-line arguments
 	direction := flag.String("direction", "up", "Direction of migration ('up' or 'down')")
 	flag.Parse()

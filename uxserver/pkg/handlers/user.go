@@ -35,8 +35,7 @@ func NewUserHandler(db *database.Database, authService *auth.AuthService) *UserH
 	}
 }
 
-// CreateUser handles the creation of a new user
-func (h *UserHandler) CreateUser(c *gin.Context) {
+func (h *UserHandler) RegisterUser(c *gin.Context) {
 	var user models.User
 
 	if err := c.ShouldBindJSON(&user); err != nil {
@@ -50,24 +49,48 @@ func (h *UserHandler) CreateUser(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to check username uniqueness"})
 		return
 	}
+
 	if existingUser {
 		c.JSON(http.StatusConflict, gin.H{"error": "Username already taken"})
 		return
 	}
 
-	if err := h.DB.CreateUser(&user); err != nil {
+	if err := h.DB.RegisterUser(&user); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create user"})
 		return
 	}
 
-	c.JSON(http.StatusCreated, user)
+	// Construct a new object with only UserID and Username
+	response := gin.H{
+		"userID":   user.ID,
+		"username": user.Username,
+	}
+
+	c.JSON(http.StatusCreated, response)
+}
+
+// CreateUser handles the creation of a new user
+func (h *UserHandler) CreateUserProfile(c *gin.Context) {
+	var userProfile models.UserProfile
+
+	if err := c.ShouldBindJSON(&userProfile); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	if err := h.DB.CreateUserProfile(&userProfile); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create user"})
+		return
+	}
+
+	c.JSON(http.StatusCreated, userProfile)
 }
 
 // GetUserDetails handles the retrieval of user details.
 func (h *UserHandler) GetUserDetails(c *gin.Context) {
 	username := c.Param("username")
 
-	user, err := h.DB.GetUserDetails(username)
+	user, err := h.DB.GetUserDetailsByUsername(username)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch user details"})
 		return
@@ -205,7 +228,7 @@ func (h *UserHandler) LoginUser(c *gin.Context) {
 	}
 
 	// If authentication succeeds, generate a JWT token for the user.
-	token, err := h.AuthService.GenerateToken(strconv.FormatInt(user.ID, 10))
+	token, err := h.AuthService.GenerateToken(strconv.FormatInt(user.UserID, 10))
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to generate token"})
 		return
