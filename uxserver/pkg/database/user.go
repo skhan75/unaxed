@@ -4,7 +4,6 @@ package database
 import (
 	"database/sql"
 	"errors"
-	"fmt"
 	"unaxed-server/pkg/models"
 
 	"golang.org/x/crypto/bcrypt"
@@ -17,8 +16,6 @@ func (database *Database) RegisterUser(user *models.User) error {
 		return err
 	}
 	user.Password = string(hashedPassword)
-	fmt.Printf("username %s\n", user.Username)
-	fmt.Printf("password %s\n", user.Password)
 
 	stmt, err := database.DB.Prepare("INSERT INTO ux_dim_users (username, password, email) VALUES (?, ?, ?)")
 	if err != nil {
@@ -26,13 +23,21 @@ func (database *Database) RegisterUser(user *models.User) error {
 	}
 	defer stmt.Close()
 
-	fmt.Printf("Statement %v\n", stmt)
-	_, err = stmt.Exec(user.Username, user.Password, user.Email)
+	result, err := stmt.Exec(user.Username, user.Password, user.Email)
 	if err != nil {
-		fmt.Printf("Error while executing statement: %v", err)
 		return err
 	}
-	return err
+
+	// Capture the last inserted ID
+	lastInsertID, err := result.LastInsertId()
+	if err != nil {
+		return err
+	}
+
+	// Assign the last inserted ID to the user's ID
+	user.ID = lastInsertID
+
+	return nil
 }
 
 // UserProfile creation function
