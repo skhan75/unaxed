@@ -62,7 +62,7 @@ func (h *UserHandler) RegisterUser(c *gin.Context) {
 
 	// Construct a new object with only UserID and Username
 	response := gin.H{
-		"userID":   user.ID,
+		"id":       user.ID,
 		"username": user.Username,
 	}
 
@@ -221,14 +221,14 @@ func (h *UserHandler) LoginUser(c *gin.Context) {
 	}
 
 	// Authenticate the user based on username and password using the AuthenticateUser method.
-	user, err := h.DB.AuthenticateUser(loginRequest.Username, loginRequest.Password)
+	userID, err := h.DB.AuthenticateUser(loginRequest.Username, loginRequest.Password)
 	if err != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid credentials"})
 		return
 	}
 
 	// If authentication succeeds, generate a JWT token for the user.
-	token, err := h.AuthService.GenerateToken(strconv.FormatInt(user.UserID, 10))
+	token, err := h.AuthService.GenerateToken(strconv.FormatInt(*userID, 10))
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to generate token"})
 		return

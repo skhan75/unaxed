@@ -4,6 +4,7 @@ package database
 import (
 	"database/sql"
 	"errors"
+	"fmt"
 	"unaxed-server/pkg/models"
 
 	"golang.org/x/crypto/bcrypt"
@@ -110,7 +111,7 @@ func (database *Database) GetUserDetailsByID(userID string) (*models.UserProfile
 }
 
 func (database *Database) GetUserDetailsByUsername(username string) (*models.UserProfile, error) {
-	stmt, err := database.DB.Prepare("SELECT id, username, email, first_name, middle_name, last_name, bio, city, country FROM ux_dim_users WHERE username = ?")
+	stmt, err := database.DB.Prepare("SELECT user_id, username, email, first_name, middle_name, last_name, bio, city, country FROM ux_dim_user_profiles WHERE username = ?")
 	if err != nil {
 		return nil, err
 	}
@@ -197,23 +198,23 @@ func (database *Database) UsernameExists(username string) (bool, error) {
 	return count > 0, nil
 }
 
-func (database *Database) getUserPassword(username string) (string, error) {
-	stmt, err := database.DB.Prepare("SELECT password FROM ux_dim_users WHERE username = ?")
+func (database *Database) getUserIDandPassword(username string) (*models.User, error) {
+	stmt, err := database.DB.Prepare("SELECT id, password FROM ux_dim_users WHERE username = ?")
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 	defer stmt.Close()
 
-	var password string
-	err = stmt.QueryRow(username).Scan(&password)
+	var user models.User
+	err = stmt.QueryRow(username).Scan(&user.ID, &user.Password)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return "", errors.New("invalid credentials")
+			return nil, errors.New("invalid credentials")
 		}
-		return "", err // Other error
+		return nil, err // Other error
 	}
 
-	return password, nil
+	return &user, nil
 }
 
 func (database *Database) DeleteUser(username string) error {
@@ -264,32 +265,27 @@ func (database *Database) DeleteUserByID(userID string) error {
 	return nil
 }
 
-func (database *Database) AuthenticateUser(username, password string) (*models.UserProfile, error) {
+func (database *Database) AuthenticateUser(username, password string) (*int64, error) {
 	// Retrieve hashed password of the user
-	hashedPassword, err := database.getUserPassword(username)
+	user, err := database.getUserIDandPassword(username)
 	if err != nil {
 		return nil, err
 	}
 
-	if hashedPassword == "" {
-		// User does not exist
+	if user == nil || user.Password == "" {
 		return nil, errors.New("user not found")
 	}
 
 	// Compare hash of provided password with the stored hash
-	err = bcrypt.CompareHashAndPassword([]byte(hashedPassword), []byte(password))
+	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password))
 	if err != nil {
 		if errors.Is(err, bcrypt.ErrMismatchedHashAndPassword) {
-			return nil, errors.New("invalid credential") // Return error if hash and password don't match
+			return nil, errors.New("invalid credential")
 		}
 		return nil, err
 	}
 
-	// If authentication is successful, retrieve the full user details
-	userDetails, err := database.GetUserDetailsByUsername(username)
-	if err != nil {
-		return nil, err
-	}
+	fmt.Printf("Authentication successful for user ID: %d\n", user.ID)
 
-	return userDetails, nil // Return the user if they match
+	return &user.ID, nil
 }
