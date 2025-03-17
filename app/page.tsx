@@ -538,7 +538,7 @@ function LoggedInHomePage() {
                 {sortedPosts.map((post) => (
                   <div
                     key={post.id}
-                    className={`border border-primary/20 bg-zinc-900/90 rounded-lg overflow-hidden transition-colors relative ${
+                    className={`bg-card rounded-lg border border-border overflow-hidden transition-colors relative ${
                       viewMode === "list" ? "flex items-center" : ""
                     }`}
                     style={{
@@ -811,7 +811,7 @@ function LoggedInHomePage() {
           <div className="space-y-8">
             {/* Tags Section */}
             <section
-              className="border border-primary/20 bg-zinc-900/90 rounded-lg p-6"
+              className="bg-card rounded-lg border border-border p-6"
               style={{
                 boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)",
               }}
@@ -835,7 +835,7 @@ function LoggedInHomePage() {
 
             {/* Popular Posts Section */}
             <section
-              className="border border-primary/20 bg-zinc-900/90 rounded-lg p-6"
+              className="bg-card rounded-lg border border-border p-6"
               style={{
                 boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)",
               }}
@@ -878,7 +878,7 @@ function LoggedInHomePage() {
 
             {/* Who to Follow Section */}
             <section
-              className="border border-primary/20 bg-zinc-900/90 rounded-lg p-6"
+              className="bg-card rounded-lg border border-border p-6"
               style={{
                 boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)",
               }}
@@ -1016,7 +1016,7 @@ function NonLoggedInHomePage({ posts }: { posts: any[] }) {
             {posts.map((post) => (
               <div
                 key={post.id}
-                className="border border-primary/20 bg-zinc-900/90 rounded-lg overflow-hidden transition-colors"
+                className="bg-card rounded-lg border border-border overflow-hidden transition-colors"
                 style={{
                   boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)",
                 }}

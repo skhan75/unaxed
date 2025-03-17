@@ -1,12 +1,11 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { Book, Moon, Sun } from "lucide-react"
+import { Book, Circle, Moon, Sun } from "lucide-react"
 import { useTheme } from "next-themes"
 
 import { Button } from "@/components/ui/button"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 
 export function ThemeToggle() {
   const { theme, setTheme } = useTheme()
@@ -19,7 +18,7 @@ export function ThemeToggle() {
 
   // Get the icon based on current theme
   const getThemeIcon = () => {
-    if (!mounted) return null
+    if (!mounted) return <Moon className="h-[1.2rem] w-[1.2rem]" />
 
     switch (theme) {
       case "dark":
@@ -29,66 +28,70 @@ export function ThemeToggle() {
       case "reading":
         return <Book className="h-[1.2rem] w-[1.2rem]" />
       default:
-        return <Sun className="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
+        return <Moon className="h-[1.2rem] w-[1.2rem]" />
     }
   }
 
   if (!mounted) {
     return (
-      <Button variant="ghost" size="icon" className="h-9 w-9 rounded-md">
+      <Button variant="ghost" size="icon" className="h-9 w-9 rounded-full">
+        <Moon className="h-[1.2rem] w-[1.2rem]" />
         <span className="sr-only">Toggle theme</span>
       </Button>
     )
   }
 
   return (
-    <TooltipProvider>
-      <Tooltip>
-        <DropdownMenu>
-          <TooltipTrigger asChild>
-            <DropdownMenuTrigger asChild>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-9 w-9 rounded-md relative group"
-                aria-label="Toggle theme"
-              >
-                {getThemeIcon()}
-                <span className="sr-only">Toggle theme</span>
-                <span className="absolute -inset-1 rounded-md bg-primary/10 opacity-0 group-hover:opacity-100 transition-opacity"></span>
-              </Button>
-            </DropdownMenuTrigger>
-          </TooltipTrigger>
-          <TooltipContent side="bottom">
-            <p>Change theme</p>
-          </TooltipContent>
-          <DropdownMenuContent align="end" className="border border-primary/20 bg-background/80 backdrop-blur-sm">
-            <DropdownMenuItem onClick={() => setTheme("light")} className="flex items-center gap-2 cursor-pointer">
-              <Sun className="h-4 w-4" />
-              <span>Light</span>
-              {theme === "light" && <span className="ml-auto h-1.5 w-1.5 rounded-full bg-primary"></span>}
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => setTheme("dark")} className="flex items-center gap-2 cursor-pointer">
-              <Moon className="h-4 w-4" />
-              <span>Dark</span>
-              {theme === "dark" && <span className="ml-auto h-1.5 w-1.5 rounded-full bg-primary"></span>}
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => setTheme("reading")} className="flex items-center gap-2 cursor-pointer">
-              <Book className="h-4 w-4" />
-              <span>Reading Mode</span>
-              {theme === "reading" && <span className="ml-auto h-1.5 w-1.5 rounded-full bg-primary"></span>}
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => setTheme("system")} className="flex items-center gap-2 cursor-pointer">
-              <span className="flex h-4 w-4 items-center justify-center">
-                <span className="h-3 w-3 rounded-full border border-current"></span>
-              </span>
-              <span>System</span>
-              {theme === "system" && <span className="ml-auto h-1.5 w-1.5 rounded-full bg-primary"></span>}
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      </Tooltip>
-    </TooltipProvider>
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button variant="ghost" size="icon" className="h-9 w-9 rounded-full">
+          {getThemeIcon()}
+          <span className="sr-only">Toggle theme</span>
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end" className="w-40 bg-black/95 border-zinc-800">
+        <DropdownMenuItem
+          onClick={() => setTheme("light")}
+          className="flex items-center justify-between cursor-pointer py-2 px-3 text-white hover:bg-zinc-800"
+        >
+          <div className="flex items-center gap-2">
+            <Sun className="h-4 w-4" />
+            <span>Light</span>
+          </div>
+          {theme === "light" && <div className="h-2 w-2 rounded-full bg-purple-500" />}
+        </DropdownMenuItem>
+        <DropdownMenuItem
+          onClick={() => setTheme("dark")}
+          className="flex items-center justify-between cursor-pointer py-2 px-3 text-white hover:bg-zinc-800"
+        >
+          <div className="flex items-center gap-2">
+            <Moon className="h-4 w-4" />
+            <span>Dark</span>
+          </div>
+          {theme === "dark" && <div className="h-2 w-2 rounded-full bg-purple-500" />}
+        </DropdownMenuItem>
+        <DropdownMenuItem
+          onClick={() => setTheme("reading")}
+          className="flex items-center justify-between cursor-pointer py-2 px-3 text-white hover:bg-zinc-800"
+        >
+          <div className="flex items-center gap-2">
+            <Book className="h-4 w-4" />
+            <span>Reading Mode</span>
+          </div>
+          {theme === "reading" && <div className="h-2 w-2 rounded-full bg-purple-500" />}
+        </DropdownMenuItem>
+        <DropdownMenuItem
+          onClick={() => setTheme("system")}
+          className="flex items-center justify-between cursor-pointer py-2 px-3 text-white hover:bg-zinc-800"
+        >
+          <div className="flex items-center gap-2">
+            <Circle className="h-4 w-4" />
+            <span>System</span>
+          </div>
+          {theme === "system" && <div className="h-2 w-2 rounded-full bg-purple-500" />}
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
   )
 }
 

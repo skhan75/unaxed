@@ -2,15 +2,15 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { Menu, Plus, Moon, Sun, Book } from "lucide-react"
-import { useTheme } from "next-themes"
+import { Menu, Sun, Moon, Book, PenLine } from "lucide-react"
 import { useState, useEffect, useCallback } from "react"
 
 import { Button } from "@/components/ui/button"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
 import { UserAccountNav } from "@/components/user-account-nav"
 import { UserAvatar, type UserInfo } from "@/components/user-avatar"
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
+import { ThemeSelector } from "@/components/theme-selector"
+import { useTheme } from "next-themes"
 
 // Mock current user - in a real app, this would come from an auth context
 // Export a function to get the current user state that can be toggled
@@ -52,14 +52,8 @@ export const useAuth = () => {
 
 export function SiteHeader() {
   const pathname = usePathname()
-  const { setTheme, theme } = useTheme()
   const { currentUser, isLoaded, logout } = useAuth()
-  const [mounted, setMounted] = useState(false)
-
-  // Avoid hydration mismatch
-  useEffect(() => {
-    setMounted(true)
-  }, [])
+  const { setTheme, theme } = useTheme()
 
   const handleSignOut = useCallback(() => {
     logout()
@@ -85,48 +79,19 @@ export function SiteHeader() {
         <div className="flex items-center gap-2">
           {/* New Post Button - Only visible when user is logged in */}
           {isLoaded && currentUser && (
-            <Button variant="default" size="sm" asChild className="mr-2 bg-white text-black hover:bg-white/90">
-              <Link href="/create">
-                <Plus className="mr-2 h-4 w-4" />
-                New Post
-              </Link>
-            </Button>
+            <Link href="/create" className="mr-2">
+              <div className="group relative flex items-center justify-center">
+                <div className="absolute inset-0 rounded-full bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-500 opacity-80 blur-sm transition-all duration-300 group-hover:opacity-100 group-hover:blur-md dark:from-pink-600 dark:via-purple-600 dark:to-indigo-600 reading:from-amber-600 reading:via-orange-500 reading:to-yellow-600"></div>
+                <div className="relative flex h-9 items-center justify-center rounded-full bg-background px-4 shadow-sm">
+                  <PenLine className="h-4 w-4 mr-1.5 text-foreground transition-transform duration-200 group-hover:rotate-12" />
+                  <span className="text-sm font-medium text-foreground">Write</span>
+                </div>
+              </div>
+            </Link>
           )}
 
-          {/* Theme Toggle - Always visible for all users */}
-          {mounted && (
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon" className="h-9 w-9">
-                  {theme === "light" ? (
-                    <Sun className="h-[1.2rem] w-[1.2rem]" />
-                  ) : theme === "dark" ? (
-                    <Moon className="h-[1.2rem] w-[1.2rem]" />
-                  ) : (
-                    <Book className="h-[1.2rem] w-[1.2rem]" />
-                  )}
-                  <span className="sr-only">Toggle theme</span>
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuItem onClick={() => setTheme("light")} className="cursor-pointer">
-                  <Sun className="mr-2 h-4 w-4" />
-                  <span>Light</span>
-                  {theme === "light" && <span className="ml-auto h-1.5 w-1.5 rounded-full bg-primary"></span>}
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setTheme("dark")} className="cursor-pointer">
-                  <Moon className="mr-2 h-4 w-4" />
-                  <span>Dark</span>
-                  {theme === "dark" && <span className="ml-auto h-1.5 w-1.5 rounded-full bg-primary"></span>}
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setTheme("reading")} className="cursor-pointer">
-                  <Book className="mr-2 h-4 w-4" />
-                  <span>Reading</span>
-                  {theme === "reading" && <span className="ml-auto h-1.5 w-1.5 rounded-full bg-primary"></span>}
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          )}
+          {/* Theme Selector - Always visible for all users */}
+          <ThemeSelector />
 
           {/* User Account Nav - Only visible when user is logged in */}
           {isLoaded && (
@@ -223,34 +188,36 @@ export function SiteHeader() {
                 <div className="border-t border-border my-4"></div>
                 <div className="flex flex-col gap-2">
                   <span className="text-sm font-medium">Theme</span>
-                  <div className="grid grid-cols-3 gap-2">
-                    <Button
-                      variant={theme === "light" ? "default" : "outline"}
-                      size="sm"
-                      onClick={() => setTheme("light")}
-                      className="flex items-center justify-center"
-                    >
-                      <Sun className="h-4 w-4 mr-2" />
-                      Light
-                    </Button>
-                    <Button
-                      variant={theme === "dark" ? "default" : "outline"}
-                      size="sm"
-                      onClick={() => setTheme("dark")}
-                      className="flex items-center justify-center"
-                    >
-                      <Moon className="h-4 w-4 mr-2" />
-                      Dark
-                    </Button>
-                    <Button
-                      variant={theme === "reading" ? "default" : "outline"}
-                      size="sm"
-                      onClick={() => setTheme("reading")}
-                      className="flex items-center justify-center"
-                    >
-                      <Book className="h-4 w-4 mr-2" />
-                      Read
-                    </Button>
+                  <div className="flex flex-col gap-2">
+                    <div className="grid grid-cols-3 gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setTheme("light")}
+                        className="flex items-center justify-center"
+                      >
+                        <Sun className="h-4 w-4 mr-2" />
+                        Light
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setTheme("dark")}
+                        className="flex items-center justify-center"
+                      >
+                        <Moon className="h-4 w-4 mr-2" />
+                        Dark
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setTheme("reading")}
+                        className="flex items-center justify-center"
+                      >
+                        <Book className="h-4 w-4 mr-2" />
+                        Read
+                      </Button>
+                    </div>
                   </div>
                 </div>
               </nav>

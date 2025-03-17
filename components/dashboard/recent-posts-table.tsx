@@ -23,7 +23,7 @@ interface RecentPostsTableProps {
 
 export function RecentPostsTable({ posts }: RecentPostsTableProps) {
   return (
-    <div className="overflow-auto bg-zinc-900/90 rounded-lg p-4">
+    <div className="overflow-auto bg-card rounded-lg p-4">
       <table className="w-full text-sm">
         <thead>
           <tr className="border-b border-muted/30">
