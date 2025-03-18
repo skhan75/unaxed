@@ -27,34 +27,15 @@ export function TagCloud({ tags, counts }: TagCloudProps) {
     return 0.7 + normalized * 0.5
   }
 
-  // Function to determine color based on count
-  const getColor = (tag: string) => {
-    const count = counts[tag]
-    const max = Math.max(...Object.values(counts))
-    const min = Math.min(...Object.values(counts))
-    const range = max - min || 1
-    const normalized = (count - min) / range
-
-    // Blend between pink and indigo
-    const r = Math.round(255 * (1 - normalized) + 79 * normalized)
-    const g = Math.round(105 * (1 - normalized) + 70 * normalized)
-    const b = Math.round(180 * (1 - normalized) + 221 * normalized)
-
-    return `rgb(${r}, ${g}, ${b})`
-  }
-
   return (
     <div className="flex flex-wrap gap-2">
       {sortedTags.map((tag) => (
         <Link href={`/tags/${tag}`} key={tag}>
           <Badge
-            variant="outline"
-            className="hover:bg-primary/10 transition-all duration-300 border-primary/20 bg-background/80 backdrop-blur-sm"
+            className={`transition-all duration-300 dark:bg-white dark:text-black dark:border-zinc-200 dark:hover:bg-zinc-100 bg-zinc-100 text-zinc-900 border border-zinc-200 hover:bg-zinc-200`}
             style={{
               fontSize: `${getFontSize(tag)}rem`,
-              color: hoveredTag === tag ? "hsl(var(--primary))" : getColor(tag),
               transform: hoveredTag === tag ? "scale(1.05)" : "scale(1)",
-              boxShadow: hoveredTag === tag ? "0 0 8px rgba(var(--primary), 0.3)" : "none",
             }}
             onMouseEnter={() => setHoveredTag(tag)}
             onMouseLeave={() => setHoveredTag(null)}

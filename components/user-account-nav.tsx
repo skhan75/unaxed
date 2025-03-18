@@ -1,11 +1,12 @@
 "use client"
 
 import Link from "next/link"
-import { useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { LogOut, Plus, Settings, User, Users } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { UserAvatar, type UserInfo } from "@/components/user-avatar"
+import type { UserInfo } from "@/components/user-avatar"
 import { useAuth } from "@/components/site-header"
+import { ProfileAvatar } from "@/components/profile-avatar"
 
 interface UserAccountNavProps {
   user: UserInfo
@@ -14,16 +15,36 @@ interface UserAccountNavProps {
 export function UserAccountNav({ user }: UserAccountNavProps) {
   const { logout } = useAuth()
   const [isOpen, setIsOpen] = useState(false)
+  const dropdownRef = useRef<HTMLDivElement>(null)
 
   const handleSignOut = () => {
     logout()
     window.location.href = "/"
   }
 
+  // Add click outside handler
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsOpen(false)
+      }
+    }
+
+    // Add event listener when dropdown is open
+    if (isOpen) {
+      document.addEventListener("mousedown", handleClickOutside)
+    }
+
+    // Clean up event listener
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside)
+    }
+  }, [isOpen])
+
   return (
-    <div className="relative">
+    <div className="relative" ref={dropdownRef}>
       <Button variant="ghost" className="relative h-10 w-10 rounded-full" onClick={() => setIsOpen(!isOpen)}>
-        <UserAvatar user={user} className="h-10 w-10" />
+        <ProfileAvatar src={user.avatar} alt={user.name} size="md" />
       </Button>
 
       {isOpen && (

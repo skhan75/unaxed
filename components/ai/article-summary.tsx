@@ -1,10 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Sparkles, RefreshCw, ThumbsUp, ThumbsDown } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { Card } from "@/components/ui/card"
-import { Skeleton } from "@/components/ui/skeleton"
+import { Sparkles } from "lucide-react"
 
 interface ArticleSummaryProps {
   articleId: number
@@ -15,120 +12,67 @@ interface ArticleSummaryProps {
 export function ArticleSummary({ articleId, title, content }: ArticleSummaryProps) {
   const [summary, setSummary] = useState<string>("")
   const [isLoading, setIsLoading] = useState(true)
-  const [isRegenerating, setIsRegenerating] = useState(false)
-  const [feedbackGiven, setFeedbackGiven] = useState<"positive" | "negative" | null>(null)
-
-  // Mock function to generate summary - would be replaced with actual API call
-  const generateSummary = async () => {
-    // TODO: Replace with actual AI API call to generate article summaries
-    // Implementation should:
-    // 1. Call a backend endpoint that uses an LLM (e.g., OpenAI GPT-4)
-    // 2. Pass the article content and request a concise summary
-    // 3. Return the generated summary text
-
-    // Simulate API call delay
-    await new Promise((resolve) => setTimeout(resolve, 1500))
-
-    // Mock summaries based on article ID
-    const mockSummaries: Record<number, string> = {
-      1: "Web development is evolving with AI-driven tools, WebAssembly, and edge computing enabling more powerful applications. These technologies are changing how developers build and deploy web applications, offering better performance and user experiences.",
-      2: "Minimalism in UI design focuses on simplicity and functionality by emphasizing white space, typography, and purposeful color usage. This approach creates more usable interfaces by removing unnecessary elements and focusing on what truly matters to users.",
-      3: "Digital photography combines technical skills with artistic principles. Understanding light, composition techniques, and thoughtful post-processing are essential to creating compelling images that convey emotion and tell stories.",
-      // Default summary for other IDs
-      0: "This article explores key concepts and provides insights into important developments in the field. The author presents practical applications and future trends that readers should be aware of.",
-    }
-
-    return mockSummaries[articleId] || mockSummaries[0]
-  }
 
   useEffect(() => {
-    generateSummary().then((result) => {
-      setSummary(result)
+    // Simulate loading time
+    const timer = setTimeout(() => {
+      // Generate a summary based on the content
+      // In a real app, this would be an API call to an AI service
+      const generatedSummary = generateSummary(title, content)
+      setSummary(generatedSummary)
       setIsLoading(false)
-    })
-  }, [articleId])
+    }, 1000)
 
-  const handleRegenerate = async () => {
-    setIsRegenerating(true)
-    setFeedbackGiven(null)
+    return () => clearTimeout(timer)
+  }, [articleId, title, content])
 
-    // Simulate regeneration
-    const newSummary = await generateSummary()
-    setSummary(newSummary)
-    setIsRegenerating(false)
-  }
-
-  const handleFeedback = (type: "positive" | "negative") => {
-    setFeedbackGiven(type)
-    // In a real implementation, this would send feedback to the backend
-    console.log(`User gave ${type} feedback for summary of article ${articleId}`)
+  if (isLoading) {
+    return (
+      <div className="animate-pulse space-y-3">
+        <div className="h-4 bg-zinc-200 dark:bg-zinc-700 rounded w-3/4"></div>
+        <div className="h-4 bg-zinc-200 dark:bg-zinc-700 rounded w-full"></div>
+        <div className="h-4 bg-zinc-200 dark:bg-zinc-700 rounded w-5/6"></div>
+        <div className="h-4 bg-zinc-200 dark:bg-zinc-700 rounded w-2/3"></div>
+      </div>
+    )
   }
 
   return (
-    <Card className="p-4 mb-6 border border-primary/20 bg-secondary/10">
-      <div className="flex items-center justify-between mb-2">
-        <div className="flex items-center gap-2">
-          <Sparkles className="h-4 w-4 text-primary" />
-          <h3 className="text-sm font-medium">AI-Generated Summary</h3>
-        </div>
-        <div className="flex items-center gap-2">
-          {!isLoading && !isRegenerating && (
-            <div className="flex items-center gap-1">
-              <Button
-                variant="ghost"
-                size="icon"
-                className={`h-7 w-7 rounded-full ${feedbackGiven === "positive" ? "bg-green-500/20 text-green-500" : ""}`}
-                onClick={() => handleFeedback("positive")}
-                disabled={feedbackGiven !== null}
-              >
-                <ThumbsUp className="h-3.5 w-3.5" />
-                <span className="sr-only">Good summary</span>
-              </Button>
-              <Button
-                variant="ghost"
-                size="icon"
-                className={`h-7 w-7 rounded-full ${feedbackGiven === "negative" ? "bg-red-500/20 text-red-500" : ""}`}
-                onClick={() => handleFeedback("negative")}
-                disabled={feedbackGiven !== null}
-              >
-                <ThumbsDown className="h-3.5 w-3.5" />
-                <span className="sr-only">Bad summary</span>
-              </Button>
-            </div>
-          )}
-          <Button
-            variant="outline"
-            size="sm"
-            className="h-7 px-2 text-xs gap-1 border-primary/20 hover:bg-blue-100 hover:text-blue-700"
-            onClick={handleRegenerate}
-            disabled={isLoading || isRegenerating}
-          >
-            <RefreshCw className={`h-3 w-3 ${isRegenerating ? "animate-spin" : ""}`} />
-            {isRegenerating ? "Regenerating..." : "Regenerate"}
-          </Button>
-        </div>
+    <div className="space-y-3">
+      <p className="leading-relaxed">{summary}</p>
+      <div className="text-xs text-zinc-500 dark:text-zinc-400 flex items-center gap-1 mt-2">
+        <Sparkles className="h-3 w-3" />
+        <span>AI-generated summary based on article content</span>
       </div>
+    </div>
+  )
+}
 
-      <div className="text-sm text-muted-foreground">
-        {isLoading || isRegenerating ? (
-          <div className="space-y-2">
-            <Skeleton className="h-4 w-full" />
-            <Skeleton className="h-4 w-[90%]" />
-            <Skeleton className="h-4 w-[95%]" />
-          </div>
-        ) : (
-          <p>{summary}</p>
-        )}
-      </div>
+// Mock function to generate a summary
+// In a real app, this would be replaced with an API call to an AI service
+function generateSummary(title: string, content: string): string {
+  // Simple mock implementation
+  if (title.includes("Newsletter")) {
+    return "Building a successful newsletter in 2025 requires focusing on personalization, valuable content, and consistent delivery. This article explores strategies for growing your subscriber base and maintaining high engagement rates in an increasingly competitive digital landscape."
+  }
 
-      {feedbackGiven && (
-        <div className="mt-2 text-xs text-muted-foreground">
-          {feedbackGiven === "positive"
-            ? "Thanks for your feedback! We'll use it to improve our summaries."
-            : "Thanks for your feedback. We'll work on improving our summaries."}
-        </div>
-      )}
-    </Card>
+  if (title.includes("Web Development")) {
+    return "The future of web development is being shaped by AI-driven tools, WebAssembly, and edge computing. These technologies are enabling more powerful, accessible, and performant applications while changing how developers approach their craft."
+  }
+
+  if (title.includes("UI Design") || content.includes("UI design")) {
+    return "Minimalism in UI design focuses on simplicity and functionality by emphasizing white space, typography, and purposeful color usage. This approach creates more usable interfaces by removing unnecessary elements and focusing on what truly matters to users."
+  }
+
+  if (title.includes("Photography") || content.includes("photography")) {
+    return "Digital photography combines technical skill with artistic vision. Understanding light, composition techniques, and thoughtful post-processing are key elements in creating compelling images that convey emotion and tell stories."
+  }
+
+  // Default summary if no specific matches
+  return (
+    "This article explores key concepts and practical insights on " +
+    title.toLowerCase() +
+    ". The author provides valuable perspectives backed by experience and research, making it a worthwhile read for anyone interested in this topic."
   )
 }
 

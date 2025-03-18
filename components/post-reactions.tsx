@@ -170,14 +170,14 @@ export function PostReactions({
   const buttonSize = getButtonSize()
 
   return (
-    <div className="flex items-center gap-2">
+    <div className="flex items-center gap-2 post-reactions">
       <TooltipProvider>
         <Tooltip>
           <TooltipTrigger asChild>
             <Button
               variant={hasLiked ? "default" : "outline"}
               size="sm"
-              className={`${buttonSize.button} gap-1.5 ${hasLiked ? "bg-pink-500/20 text-pink-500 hover:bg-pink-500/30 border-pink-500/20" : "border-primary/20 bg-background/80 backdrop-blur-sm"}`}
+              className={`${buttonSize.button} gap-1.5 ${hasLiked ? "bg-pink-500/20 text-pink-500 hover:bg-pink-500/30 border-pink-500/20" : "border-primary/20 bg-background/80 backdrop-blur-sm"} reading:text-foreground reading:border-border`}
               onClick={handleLike}
               disabled={isLoading}
             >
@@ -198,7 +198,7 @@ export function PostReactions({
             <Button
               variant={hasGivenStandingOvation ? "default" : "outline"}
               size="sm"
-              className={`${buttonSize.button} gap-1.5 ${hasGivenStandingOvation ? "bg-amber-500/20 text-amber-500 hover:bg-amber-500/30 border-amber-500/20" : "border-primary/20 bg-background/80 backdrop-blur-sm"}`}
+              className={`${buttonSize.button} gap-1.5 ${hasGivenStandingOvation ? "bg-amber-500/20 text-amber-500 hover:bg-amber-500/30 border-amber-500/20" : "border-primary/20 bg-background/80 backdrop-blur-sm"} reading:text-foreground reading:border-border`}
               onClick={handleStandingOvation}
               disabled={isLoading || hasGivenStandingOvation || standingOvationCredits <= 0}
             >
@@ -225,7 +225,7 @@ export function PostReactions({
             <Button
               variant="outline"
               size="sm"
-              className={`${buttonSize.button} gap-1.5 border-primary/20 bg-background/80 backdrop-blur-sm`}
+              className={`${buttonSize.button} gap-1.5 border-primary/20 bg-background/80 backdrop-blur-sm reading:text-foreground reading:border-border`}
               onClick={handleCommentClick}
             >
               <MessageSquare className={buttonSize.icon} />
@@ -246,7 +246,7 @@ export function PostReactions({
               <Button
                 variant="outline"
                 size="sm"
-                className={`${buttonSize.button} gap-1.5 border-primary/20 bg-background/80 backdrop-blur-sm ml-auto`}
+                className={`${buttonSize.button} gap-1.5 border-primary/20 bg-background/80 backdrop-blur-sm ml-auto reading:text-foreground reading:border-border`}
               >
                 <Share2 className={buttonSize.icon} />
                 {showLabels && <span className={buttonSize.text}>Share</span>}

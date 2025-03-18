@@ -153,7 +153,7 @@ export function CommentSection({ postId, compact = false, maxComments = 3, showV
   const displayedComments = showAllComments ? comments : comments.slice(-Math.min(maxComments, comments.length))
 
   return (
-    <div className={`space-y-4 ${compact ? "mt-2" : "mt-6"}`}>
+    <div className={`space-y-4 ${compact ? "mt-2" : "mt-6"} comment-section`}>
       {!compact && <Separator />}
 
       {!compact && (
@@ -175,14 +175,14 @@ export function CommentSection({ postId, compact = false, maxComments = 3, showV
               placeholder="Add a comment..."
               value={newComment}
               onChange={(e) => setNewComment(e.target.value)}
-              className="min-h-[80px] border-primary/20 bg-background/80 backdrop-blur-sm resize-none"
+              className="min-h-[80px] border-primary/20 bg-background/80 backdrop-blur-sm resize-none reading:text-foreground reading:border-border"
             />
             <div className="flex justify-end">
               <Button
                 onClick={handleSubmitComment}
                 disabled={isSubmitting || !newComment.trim()}
                 size="sm"
-                className="gap-1.5"
+                className="gap-1.5 reading:bg-button-background reading:text-button-foreground reading:hover:bg-button-hover"
               >
                 <Send className="h-3.5 w-3.5" />
                 {isSubmitting ? "Posting..." : "Post Comment"}
@@ -193,9 +193,14 @@ export function CommentSection({ postId, compact = false, maxComments = 3, showV
       )}
 
       {!currentUser && !compact && (
-        <div className="text-center p-4 border border-primary/20 rounded-md bg-background/80 backdrop-blur-sm">
-          <p className="text-muted-foreground mb-2">Sign in to join the conversation</p>
-          <Button variant="default" size="sm" onClick={promptLogin}>
+        <div className="text-center p-4 border border-primary/20 rounded-md bg-background/80 backdrop-blur-sm reading:text-foreground reading:border-border">
+          <p className="text-muted-foreground mb-2 reading:text-muted-foreground">Sign in to join the conversation</p>
+          <Button
+            variant="default"
+            size="sm"
+            onClick={promptLogin}
+            className="reading:bg-button-background reading:text-button-foreground reading:hover:bg-button-hover"
+          >
             Sign In to Comment
           </Button>
         </div>
@@ -214,7 +219,7 @@ export function CommentSection({ postId, compact = false, maxComments = 3, showV
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <span className="font-medium text-sm">{comment.userName}</span>
-                    <span className="text-xs text-muted-foreground">
+                    <span className="text-xs text-muted-foreground reading:text-muted-foreground">
                       {formatDistanceToNow(new Date(comment.createdAt), { addSuffix: true })}
                     </span>
                   </div>
@@ -224,7 +229,7 @@ export function CommentSection({ postId, compact = false, maxComments = 3, showV
                       <Button
                         variant="ghost"
                         size="icon"
-                        className="h-6 w-6"
+                        className="h-6 w-6 reading:text-foreground"
                         onClick={() => handleEditComment(comment)}
                       >
                         <Edit className="h-3.5 w-3.5" />
@@ -233,7 +238,7 @@ export function CommentSection({ postId, compact = false, maxComments = 3, showV
                       <Button
                         variant="ghost"
                         size="icon"
-                        className="h-6 w-6 text-destructive"
+                        className="h-6 w-6 text-destructive reading:text-destructive"
                         onClick={() => handleDeleteComment(comment.id)}
                       >
                         <Trash2 className="h-3.5 w-3.5" />
@@ -248,28 +253,37 @@ export function CommentSection({ postId, compact = false, maxComments = 3, showV
                     <Textarea
                       value={editContent}
                       onChange={(e) => setEditContent(e.target.value)}
-                      className="min-h-[60px] border-primary/20 bg-background/80 backdrop-blur-sm resize-none"
+                      className="min-h-[60px] border-primary/20 bg-background/80 backdrop-blur-sm resize-none reading:text-foreground reading:border-border"
                     />
                     <div className="flex justify-end gap-2">
-                      <Button variant="outline" size="sm" onClick={cancelEditing} className="h-7 px-2 gap-1">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={cancelEditing}
+                        className="h-7 px-2 gap-1 reading:text-foreground reading:border-border"
+                      >
                         <X className="h-3.5 w-3.5" />
                         Cancel
                       </Button>
-                      <Button size="sm" onClick={saveEditedComment} className="h-7 px-2 gap-1">
+                      <Button
+                        size="sm"
+                        onClick={saveEditedComment}
+                        className="h-7 px-2 gap-1 reading:bg-button-background reading:text-button-foreground reading:hover:bg-button-hover"
+                      >
                         <Check className="h-3.5 w-3.5" />
                         Save
                       </Button>
                     </div>
                   </div>
                 ) : (
-                  <p className="text-sm mt-1">{comment.content}</p>
+                  <p className="text-sm mt-1 reading:text-foreground">{comment.content}</p>
                 )}
               </div>
             </div>
           ))}
         </div>
       ) : (
-        <div className="text-center py-4 text-muted-foreground">
+        <div className="text-center py-4 text-muted-foreground reading:text-muted-foreground">
           <p>No comments yet. Be the first to comment!</p>
         </div>
       )}
@@ -279,7 +293,7 @@ export function CommentSection({ postId, compact = false, maxComments = 3, showV
         <Button
           variant="outline"
           size="sm"
-          className="w-full border-primary/20"
+          className="w-full border-primary/20 reading:text-foreground reading:border-border"
           onClick={() => setShowAllComments(true)}
         >
           View all {comments.length} comments
@@ -290,7 +304,7 @@ export function CommentSection({ postId, compact = false, maxComments = 3, showV
         <Button
           variant="outline"
           size="sm"
-          className="w-full border-primary/20"
+          className="w-full border-primary/20 reading:text-foreground reading:border-border"
           onClick={() => setShowAllComments(false)}
         >
           Show fewer comments

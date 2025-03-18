@@ -127,7 +127,7 @@ export function ContentRecommendations({
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 text-foreground">
       <div className="flex items-center gap-2 mb-2">
         <Brain className="h-5 w-5 text-primary" />
         <h2 className="text-xl font-bold font-mono">AI_RECOMMENDATIONS</h2>

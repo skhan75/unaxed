@@ -1,46 +1,43 @@
+"use client"
+
 import Link from "next/link"
-import { Eye, Heart, MessageSquare, Share2, User } from "lucide-react"
-// Add these imports at the top with the other imports
-import { Facebook, Instagram, Twitter, Github, Youtube, Linkedin, Globe, Mail } from "lucide-react"
+import { usePathname } from "next/navigation"
+import { Eye, Heart, MessageSquare, Share2, User, Mail, BookmarkIcon, Globe } from "lucide-react"
+import { Facebook, Instagram, Twitter, Github, Youtube, Linkedin } from "lucide-react"
+import { useEffect, useState } from "react"
 
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card"
+import { Card, CardContent } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Badge } from "@/components/ui/badge"
 import { SiteHeader } from "@/components/site-header"
 import { SiteFooter } from "@/components/site-footer"
 import { UserAvatar } from "@/components/user-avatar"
-import { FollowButton } from "@/components/follow-button"
-import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
+import { Input } from "@/components/ui/input"
+import { useAuth } from "@/components/site-header"
+import { getUserByUsername, getDefaultUser } from "@/lib/data/users"
 
 export default function ProfilePage({ params }: { params: { username: string } }) {
   const { username } = params
+  const pathname = usePathname()
+  const { currentUser } = useAuth()
+  const [isOwnProfile, setIsOwnProfile] = useState(false)
+  const [activeTab, setActiveTab] = useState("posts")
 
-  // Sample user data - in a real app, this would come from a database
-  const user = {
-    id: 1,
-    username: username,
-    name: "Alex Johnson",
-    bio: "Web Developer & Designer sharing thoughts on technology, design, and life.",
-    avatar: "https://images.unsplash.com/photo-1568602471122-7832951cc4c5?q=80&w=250&auto=format&fit=crop",
-    followers: 156,
-    following: 89,
-    joinedDate: "January 2025",
-    skills: ["React", "Next.js", "UI/UX", "Photography"],
-    social: {
-      twitter: "alexjohnson",
-      github: "alexjohnson",
-      instagram: "alexjohnson.dev",
-      facebook: "https://facebook.com/alexjohnson",
-      youtube: "https://youtube.com/@alexjohnson",
-      linkedin: "https://linkedin.com/in/alexjohnson",
-      website: "https://alexjohnson.dev",
-      email: "alex@alexjohnson.dev",
-    },
+  // Get user data from our centralized store
+  const userData = getUserByUsername(username) || {
+    ...getDefaultUser(),
+    username,
+    name: `${username.charAt(0).toUpperCase()}${username.slice(1)}`,
+    avatar: `https://api.dicebear.com/7.x/personas/svg?seed=${username}&backgroundColor=b6e3f4`,
   }
 
-  // Update the posts data structure to include images
-  // Find the posts array and add image properties
+  // Check if this is the current user's profile
+  useEffect(() => {
+    if (currentUser) {
+      setIsOwnProfile(currentUser.username === username)
+    }
+  }, [currentUser, username])
 
   // Sample posts data
   const posts = [
@@ -51,12 +48,14 @@ export default function ProfilePage({ params }: { params: { username: string } }
       date: "Mar 15, 2025",
       readTime: "5 min read",
       author: {
-        name: "Alex Johnson",
-        avatar: "https://images.unsplash.com/photo-1568602471122-7832951cc4c5?q=80&w=250&auto=format&fit=crop",
+        name: userData.name,
+        username: userData.username,
+        avatar: userData.avatar,
       },
       views: 1243,
       likes: 87,
       comments: 23,
+      bookmarked: false,
       tags: ["webdev", "future", "ai", "wasm"],
       image: "https://images.unsplash.com/photo-1571171637578-41bc2dd41cd2?q=80&w=1200&auto=format&fit=crop",
     },
@@ -67,12 +66,14 @@ export default function ProfilePage({ params }: { params: { username: string } }
       date: "Mar 10, 2025",
       readTime: "4 min read",
       author: {
-        name: "Alex Johnson",
-        avatar: "https://images.unsplash.com/photo-1568602471122-7832951cc4c5?q=80&w=250&auto=format&fit=crop",
+        name: userData.name,
+        username: userData.username,
+        avatar: userData.avatar,
       },
       views: 982,
       likes: 64,
       comments: 18,
+      bookmarked: true,
       tags: ["design", "minimalism", "ui", "ux"],
       image: "https://images.unsplash.com/photo-1545235617-9465d2a55698?q=80&w=1200&auto=format&fit=crop",
     },
@@ -83,438 +84,362 @@ export default function ProfilePage({ params }: { params: { username: string } }
       date: "Mar 5, 2025",
       readTime: "6 min read",
       author: {
-        name: "Alex Johnson",
-        avatar: "https://images.unsplash.com/photo-1568602471122-7832951cc4c5?q=80&w=250&auto=format&fit=crop",
+        name: userData.name,
+        username: userData.username,
+        avatar: userData.avatar,
       },
       views: 756,
       likes: 52,
       comments: 14,
+      bookmarked: false,
       tags: ["photography", "digital", "composition", "editing"],
       image: "https://images.unsplash.com/photo-1516035069371-29a1b244cc32?q=80&w=1200&auto=format&fit=crop",
     },
   ]
 
   return (
-    <div className="flex min-h-screen flex-col bg-background">
+    <div className="flex min-h-screen flex-col bg-black text-white">
       <SiteHeader />
-      <main className="flex-1 container py-12 relative">
-        {/* Grid background for retro-futuristic feel */}
-        <div className="absolute inset-0 grid grid-cols-[repeat(40,1fr)] grid-rows-[repeat(40,1fr)] gap-px opacity-[0.02] pointer-events-none z-0">
-          {Array.from({ length: 1600 }).map((_, i) => (
-            <div key={i} className="bg-primary/40"></div>
-          ))}
-        </div>
 
-        {/* Scanline effect */}
-        <div className="absolute inset-0 bg-[linear-gradient(to_bottom,transparent_50%,rgba(0,0,0,0.02)_50%)] bg-[length:100%_4px] pointer-events-none z-0"></div>
-
-        {/* Cover image */}
-        <div className="relative z-10 mb-8 -mt-6 rounded-lg overflow-hidden h-48 md:h-64">
-          <img
-            src="https://images.unsplash.com/photo-1550745165-9bc0b252726f?q=80&w=2000&auto=format&fit=crop"
-            alt="Profile cover"
-            className="w-full h-full object-cover"
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-background/80 to-transparent"></div>
-        </div>
-
-        <div className="relative z-10">
-          <div className="grid gap-8 md:grid-cols-[1fr_2fr]">
-            {/* Also update the profile sidebar card */}
-
-            {/* Profile Sidebar */}
-            <div className="space-y-6">
-              {/* Update the profile sidebar card */}
-              <Card className="p-6">
-                <div className="flex flex-col items-center text-center space-y-4">
-                  <UserAvatar
-                    user={{
-                      name: user.name,
-                      avatar: user.avatar,
-                    }}
-                    className="h-24 w-24 border-2 border-primary/50 glow-sm"
-                  />
-
-                  <div className="space-y-1">
-                    <h1 className="text-2xl font-bold">{user.name}</h1>
-                    <p className="text-sm text-muted-foreground">@{user.username}</p>
-                  </div>
-
-                  <p className="text-sm text-muted-foreground">{user.bio}</p>
-
-                  <div className="flex gap-4 text-sm">
-                    <div>
-                      <span className="font-bold">{user.followers}</span>{" "}
-                      <span className="text-muted-foreground">Followers</span>
-                    </div>
-                    <div>
-                      <span className="font-bold">{user.following}</span>{" "}
-                      <span className="text-muted-foreground">Following</span>
-                    </div>
-                  </div>
-
-                  <FollowButton userId={user.id} />
-                </div>
-
-                <div className="mt-6 pt-6 border-t border-primary/10">
-                  <div className="space-y-4">
-                    <div className="flex items-center gap-2 text-sm">
-                      <User className="h-4 w-4 text-muted-foreground" />
-                      <span>Joined {user.joinedDate}</span>
-                    </div>
-
-                    {user.social.website && (
-                      <div className="flex items-center gap-2 text-sm">
-                        <Globe className="h-4 w-4 text-muted-foreground" />
-                        <Link
-                          href={user.social.website}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-primary hover:text-primary/80 transition-colors"
-                        >
-                          {user.social.website.replace(/^https?:\/\//, "")}
-                        </Link>
-                      </div>
-                    )}
-
-                    {/* Add Social Media Links Section */}
-                    <div className="mt-4 pt-4 border-t border-primary/10">
-                      <h3 className="text-sm font-medium mb-3">Connect with {user.name}</h3>
-                      <div className="flex flex-wrap gap-3">
-                        {user.social.twitter && (
-                          <Link
-                            href={`https://twitter.com/${user.social.twitter}`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="bg-primary/10 hover:bg-primary/20 text-primary p-2 rounded-full transition-colors"
-                            title={`Twitter: @${user.social.twitter}`}
-                          >
-                            <Twitter className="h-5 w-5" />
-                            <span className="sr-only">Twitter</span>
-                          </Link>
-                        )}
-                        {user.social.github && (
-                          <Link
-                            href={`https://github.com/${user.social.github}`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="bg-primary/10 hover:bg-primary/20 text-primary p-2 rounded-full transition-colors"
-                            title={`GitHub: ${user.social.github}`}
-                          >
-                            <Github className="h-5 w-5" />
-                            <span className="sr-only">GitHub</span>
-                          </Link>
-                        )}
-                        {user.social.instagram && (
-                          <Link
-                            href={`https://instagram.com/${user.social.instagram}`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="bg-primary/10 hover:bg-primary/20 text-primary p-2 rounded-full transition-colors"
-                            title={`Instagram: @${user.social.instagram}`}
-                          >
-                            <Instagram className="h-5 w-5" />
-                            <span className="sr-only">Instagram</span>
-                          </Link>
-                        )}
-                        {user.social.facebook && (
-                          <Link
-                            href={user.social.facebook}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="bg-primary/10 hover:bg-primary/20 text-primary p-2 rounded-full transition-colors"
-                            title="Facebook"
-                          >
-                            <Facebook className="h-5 w-5" />
-                            <span className="sr-only">Facebook</span>
-                          </Link>
-                        )}
-                        {user.social.youtube && (
-                          <Link
-                            href={user.social.youtube}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="bg-primary/10 hover:bg-primary/20 text-primary p-2 rounded-full transition-colors"
-                            title="YouTube"
-                          >
-                            <Youtube className="h-5 w-5" />
-                            <span className="sr-only">YouTube</span>
-                          </Link>
-                        )}
-                        {user.social.linkedin && (
-                          <Link
-                            href={user.social.linkedin}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="bg-primary/10 hover:bg-primary/20 text-primary p-2 rounded-full transition-colors"
-                            title="LinkedIn"
-                          >
-                            <Linkedin className="h-5 w-5" />
-                            <span className="sr-only">LinkedIn</span>
-                          </Link>
-                        )}
-                        {user.social.email && (
-                          <Link
-                            href={`mailto:${user.social.email}`}
-                            className="bg-primary/10 hover:bg-primary/20 text-primary p-2 rounded-full transition-colors"
-                            title={user.social.email}
-                          >
-                            <Mail className="h-5 w-5" />
-                            <span className="sr-only">Email</span>
-                          </Link>
-                        )}
-                      </div>
-                    </div>
-
-                    <div className="flex flex-wrap gap-2">
-                      {user.skills.map((skill) => (
-                        <Badge
-                          key={skill}
-                          variant="secondary"
-                          className="border border-primary/20 bg-background/80 backdrop-blur-sm"
-                        >
-                          {skill}
-                        </Badge>
-                      ))}
-                    </div>
+      <main className="container py-8 px-4 mx-auto max-w-6xl">
+        <div className="grid gap-6 md:grid-cols-[320px_1fr]">
+          {/* Profile Card - Left Column */}
+          <div className="space-y-6">
+            {/* Main Profile Card */}
+            <Card className="overflow-hidden border border-zinc-800 bg-black rounded-xl">
+              <div className="relative h-24 bg-zinc-900">
+                <div className="absolute -bottom-12 left-1/2 -translate-x-1/2">
+                  <div className="p-1 rounded-full bg-zinc-800">
+                    <UserAvatar
+                      user={{
+                        name: userData.name,
+                        avatar: userData.avatar,
+                      }}
+                      className="h-24 w-24 border-2 border-black"
+                    />
                   </div>
                 </div>
-              </Card>
+              </div>
 
-              {/* Add a "People you might know" section to the sidebar */}
-              <Card className="p-6">
-                <h3 className="text-sm font-medium mb-4">People you might know</h3>
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <Avatar>
-                        <AvatarImage src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=250&auto=format&fit=crop" />
-                        <AvatarFallback>SC</AvatarFallback>
-                      </Avatar>
-                      <div>
-                        <p className="text-sm font-medium">Sarah Chen</p>
-                        <p className="text-xs text-muted-foreground">UX Designer</p>
-                      </div>
-                    </div>
-                    <Button variant="outline" size="sm" className="h-8 text-xs">
-                      Follow
-                    </Button>
+              <CardContent className="pt-16 pb-6 text-center">
+                <h1 className="text-2xl font-bold">{userData.name}</h1>
+                <p className="text-zinc-400">@{userData.username}</p>
+
+                <p className="mt-3 text-sm text-zinc-300 max-w-xs mx-auto">{userData.bio}</p>
+
+                <div className="flex justify-center gap-6 mt-4">
+                  <div className="text-center">
+                    <p className="text-lg font-bold">{userData.followers}</p>
+                    <p className="text-xs text-zinc-400">Followers</p>
                   </div>
-
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <Avatar>
-                        <AvatarImage src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=250&auto=format&fit=crop" />
-                        <AvatarFallback>JM</AvatarFallback>
-                      </Avatar>
-                      <div>
-                        <p className="text-sm font-medium">James Miller</p>
-                        <p className="text-xs text-muted-foreground">Frontend Developer</p>
-                      </div>
-                    </div>
-                    <Button variant="outline" size="sm" className="h-8 text-xs">
-                      Follow
-                    </Button>
-                  </div>
-
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <Avatar>
-                        <AvatarImage src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?q=80&w=250&auto=format&fit=crop" />
-                        <AvatarFallback>EL</AvatarFallback>
-                      </Avatar>
-                      <div>
-                        <p className="text-sm font-medium">Emily Lee</p>
-                        <p className="text-xs text-muted-foreground">Product Designer</p>
-                      </div>
-                    </div>
-                    <Button variant="outline" size="sm" className="h-8 text-xs">
-                      Follow
-                    </Button>
+                  <div className="text-center">
+                    <p className="text-lg font-bold">{userData.following}</p>
+                    <p className="text-xs text-zinc-400">Following</p>
                   </div>
                 </div>
-              </Card>
 
-              {/* Update the terminal-inspired section */}
-              <Card className="p-6 font-mono">
-                <div className="flex items-center gap-2 mb-3 text-muted-foreground">
-                  <div className="h-3 w-3 rounded-full bg-red-500"></div>
-                  <div className="h-3 w-3 rounded-full bg-yellow-500"></div>
-                  <div className="h-3 w-3 rounded-full bg-green-500"></div>
-                  <div className="text-xs ml-2">terminal</div>
+                {!isOwnProfile && (
+                  <Button className="mt-4 w-full bg-white text-black hover:bg-zinc-100 border-0">Follow</Button>
+                )}
+
+                {/* Newsletter subscription */}
+                {!isOwnProfile && (
+                  <div className="mt-6 pt-6 border-t border-zinc-800">
+                    <div className="flex items-center gap-2 justify-center mb-3">
+                      <Mail className="h-4 w-4 text-zinc-400" />
+                      <h3 className="text-sm font-medium">{userData.newsletterName}</h3>
+                    </div>
+                    <p className="text-xs text-zinc-400 mb-3">Join {userData.newsletterSubscribers} subscribers</p>
+                    <div className="flex gap-2">
+                      <Input placeholder="Your email address" className="h-9 bg-zinc-900 border-zinc-800 text-sm" />
+                      <Button size="sm" className="h-9 bg-white text-black hover:bg-zinc-100 border-0">
+                        Subscribe
+                      </Button>
+                    </div>
+                  </div>
+                )}
+
+                {/* User info and social links */}
+                <div className="mt-6 pt-6 border-t border-zinc-800 space-y-4">
+                  <div className="flex items-center justify-center gap-2 text-sm text-zinc-400">
+                    <User className="h-3 w-3" />
+                    <span>Joined {userData.joinedDate}</span>
+                  </div>
+
+                  {userData.social.website && (
+                    <div className="flex items-center justify-center gap-2 text-sm">
+                      <Globe className="h-3 w-3 text-zinc-400" />
+                      <Link
+                        href={userData.social.website}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-zinc-400 hover:text-white transition-colors"
+                      >
+                        {userData.social.website.replace(/^https?:\/\//, "")}
+                      </Link>
+                    </div>
+                  )}
                 </div>
-                <div className="space-y-2 text-sm">
-                  <p className="text-muted-foreground">
-                    $ <span className="text-foreground">user --info {user.username}</span>
-                  </p>
-                  <p className="text-green-400">● Active writer since {user.joinedDate}</p>
-                  <p className="text-muted-foreground">
-                    $ <span className="text-foreground">user --stats</span>
-                  </p>
-                  <p className="text-blue-400">
-                    Posts: {posts.length} | Followers: {user.followers}
-                  </p>
-                  <p className="text-muted-foreground">
-                    $ <span className="text-foreground">user --latest</span>
-                  </p>
-                  <p className="text-pink-400">"{posts[0].title}"</p>
-                  <p className="text-muted-foreground">
-                    $ <span className="text-foreground">_</span>
-                  </p>
-                </div>
-              </Card>
-            </div>
 
-            {/* Content Area */}
-            <div className="space-y-6">
-              <Tabs defaultValue="posts" className="w-full">
-                <TabsList className="grid w-full grid-cols-2">
-                  <TabsTrigger value="posts">Posts</TabsTrigger>
-                  <TabsTrigger value="about">About</TabsTrigger>
-                </TabsList>
-
-                {/* Now update the post cards to include images
-                Find the TabsContent with value="posts" and update the Card components */}
-
-                <TabsContent value="posts" className="space-y-6 mt-6">
-                  {posts.map((post) => (
-                    <Card
-                      key={post.id}
-                      className="overflow-hidden border border-muted/50 transition-all hover:shadow-md hover:shadow-primary/5 group"
+                {/* Social media links */}
+                <div className="mt-6 flex flex-wrap justify-center gap-3">
+                  {userData.social.twitter && (
+                    <Link
+                      href={`https://twitter.com/${userData.social.twitter}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="bg-zinc-900 hover:bg-zinc-800 p-2 rounded-full transition-colors"
                     >
-                      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                      <Twitter className="h-4 w-4" />
+                    </Link>
+                  )}
+                  {userData.social.github && (
+                    <Link
+                      href={`https://github.com/${userData.social.github}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="bg-zinc-900 hover:bg-zinc-800 p-2 rounded-full transition-colors"
+                    >
+                      <Github className="h-4 w-4" />
+                    </Link>
+                  )}
+                  {userData.social.instagram && (
+                    <Link
+                      href={`https://instagram.com/${userData.social.instagram}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="bg-zinc-900 hover:bg-zinc-800 p-2 rounded-full transition-colors"
+                    >
+                      <Instagram className="h-4 w-4" />
+                    </Link>
+                  )}
+                  {userData.social.facebook && (
+                    <Link
+                      href={userData.social.facebook}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="bg-zinc-900 hover:bg-zinc-800 p-2 rounded-full transition-colors"
+                    >
+                      <Facebook className="h-4 w-4" />
+                    </Link>
+                  )}
+                  {userData.social.youtube && (
+                    <Link
+                      href={userData.social.youtube}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="bg-zinc-900 hover:bg-zinc-800 p-2 rounded-full transition-colors"
+                    >
+                      <Youtube className="h-4 w-4" />
+                    </Link>
+                  )}
+                  {userData.social.linkedin && (
+                    <Link
+                      href={userData.social.linkedin}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="bg-zinc-900 hover:bg-zinc-800 p-2 rounded-full transition-colors"
+                    >
+                      <Linkedin className="h-4 w-4" />
+                    </Link>
+                  )}
+                </div>
+
+                {/* Skills */}
+                <div className="mt-6 flex flex-wrap justify-center gap-2">
+                  {userData.skills.map((skill) => (
+                    <Badge key={skill} variant="outline" className="bg-white text-black border-0 hover:bg-zinc-100">
+                      {skill}
+                    </Badge>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Content Area - Right Column */}
+          <div className="space-y-6">
+            <Tabs defaultValue="posts" className="w-full" onValueChange={setActiveTab}>
+              <TabsList className="w-full grid grid-cols-2 bg-black border border-zinc-800 rounded-xl p-1">
+                <TabsTrigger
+                  value="posts"
+                  className={`${activeTab === "posts" ? "bg-white text-black" : "text-zinc-400"} rounded-lg transition-all duration-300`}
+                >
+                  Posts
+                </TabsTrigger>
+                <TabsTrigger
+                  value="about"
+                  className={`${activeTab === "about" ? "bg-white text-black" : "text-zinc-400"} rounded-lg transition-all duration-300`}
+                >
+                  About
+                </TabsTrigger>
+              </TabsList>
+
+              <TabsContent value="posts" className="space-y-6 mt-6">
+                {posts.map((post) => (
+                  <Card
+                    key={post.id}
+                    className="overflow-hidden border border-zinc-800 bg-black rounded-xl hover:border-zinc-700 transition-all duration-300"
+                  >
+                    <div className="p-6">
+                      <div className="flex items-center justify-between mb-4">
                         <div className="flex items-center gap-2">
                           <UserAvatar
                             user={{
-                              name: user.name,
-                              avatar: user.avatar,
+                              name: userData.name,
+                              avatar: userData.avatar,
                             }}
                             className="h-6 w-6"
                           />
-                          <div className="text-sm font-medium">{post.author.name}</div>
+                          <span className="text-sm">{post.author.name}</span>
                         </div>
-                        <div className="text-sm text-muted-foreground">{post.date}</div>
-                      </CardHeader>
+                        <span className="text-xs text-zinc-400">{post.date}</span>
+                      </div>
 
                       {post.image && (
-                        <div className="px-6">
-                          <div className="rounded-md overflow-hidden mb-3">
-                            <img
-                              src={post.image || "/placeholder.svg"}
-                              alt={post.title}
-                              className="w-full h-48 object-cover transition-transform group-hover:scale-105 duration-300"
-                            />
-                          </div>
+                        <div className="rounded-lg overflow-hidden mb-4">
+                          <img
+                            src={post.image || "/placeholder.svg"}
+                            alt={post.title}
+                            className="w-full h-48 object-cover transition-transform hover:scale-105 duration-300"
+                          />
                         </div>
                       )}
 
-                      <CardContent className="pb-3">
-                        <Link href={`/blog/${post.id}`}>
-                          <h3 className="text-xl font-bold leading-tight tracking-tight group-hover:text-primary/90 transition-colors">
-                            {post.title}
-                          </h3>
-                        </Link>
-                        <p className="mt-2 text-muted-foreground">{post.excerpt}</p>
-                        <div className="flex flex-wrap gap-1 mt-3">
-                          {post.tags.map((tag) => (
-                            <Link href={`/tags/${tag}`} key={tag}>
-                              <Badge variant="outline" className="text-xs hover:bg-primary/10 transition-colors">
-                                #{tag}
-                              </Badge>
+                      <Link href={`/blog/${post.id}`}>
+                        <h3 className="text-xl font-bold mb-2 hover:text-zinc-300 transition-colors cursor-pointer">
+                          {post.title}
+                        </h3>
+                      </Link>
+                      <p className="text-zinc-400 text-sm mb-4">{post.excerpt}</p>
+
+                      <div className="flex flex-wrap gap-2 mb-4">
+                        {post.tags.map((tag) => (
+                          <Badge key={tag} className="bg-white text-black hover:bg-zinc-100 border-0 text-xs">
+                            <Link href={`/tags/${tag}`} className="inline-block">
+                              #{tag}
                             </Link>
-                          ))}
-                        </div>
-                      </CardContent>
-                      <CardFooter className="border-t bg-muted/20 px-6 py-3">
-                        <div className="flex items-center justify-between w-full text-xs text-muted-foreground">
-                          <div className="flex items-center gap-4">
-                            <div className="flex items-center gap-1">
-                              <Eye className="h-3.5 w-3.5" />
-                              <span>{post.views}</span>
-                            </div>
-                            <div className="flex items-center gap-1">
-                              <Heart className="h-3.5 w-3.5" />
-                              <span>{post.likes}</span>
-                            </div>
-                            <div className="flex items-center gap-1">
-                              <MessageSquare className="h-3.5 w-3.5" />
-                              <span>{post.comments}</span>
-                            </div>
+                          </Badge>
+                        ))}
+                      </div>
+
+                      <div className="flex items-center justify-between text-xs text-zinc-400">
+                        <div className="flex items-center gap-4">
+                          <div className="flex items-center gap-1">
+                            <Eye className="h-3.5 w-3.5" />
+                            <span>{post.views}</span>
                           </div>
                           <div className="flex items-center gap-1">
-                            <Button variant="ghost" size="icon" className="h-8 w-8">
-                              <Share2 className="h-3.5 w-3.5" />
-                              <span className="sr-only">Share</span>
-                            </Button>
+                            <Heart className="h-3.5 w-3.5" />
+                            <span>{post.likes}</span>
+                          </div>
+                          <div className="flex items-center gap-1">
+                            <MessageSquare className="h-3.5 w-3.5" />
+                            <span>{post.comments}</span>
                           </div>
                         </div>
-                      </CardFooter>
-                    </Card>
-                  ))}
-
-                  <Button variant="outline" className="w-full">
-                    View all posts
-                  </Button>
-                </TabsContent>
-
-                <TabsContent value="about" className="mt-6">
-                  <Card>
-                    <CardContent className="pt-6">
-                      <div className="space-y-6">
-                        <div>
-                          <h3 className="text-lg font-semibold mb-2">About {user.name}</h3>
-                          <p className="text-muted-foreground">
-                            I'm a passionate web developer and designer with over 5 years of experience creating
-                            beautiful, functional digital experiences. My journey in tech began when I built my first
-                            website at 15, and I've been hooked ever since.
-                          </p>
-                          <p className="text-muted-foreground mt-4">
-                            I specialize in modern frontend technologies like React, Next.js, and Tailwind CSS, with a
-                            focus on creating accessible, performant, and visually appealing interfaces. When I'm not
-                            coding, you can find me exploring photography, reading sci-fi novels, or hiking in the
-                            mountains.
-                          </p>
-                          <p className="text-muted-foreground mt-4">
-                            Through this blog, I share my thoughts on technology, design trends, and occasional life
-                            reflections. I believe in the power of knowledge sharing and hope my content helps fellow
-                            developers and designers on their own journeys.
-                          </p>
+                        <div className="flex items-center gap-2">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className={`h-8 w-8 ${post.bookmarked ? "text-zinc-300" : ""}`}
+                          >
+                            <BookmarkIcon className={`h-3.5 w-3.5 ${post.bookmarked ? "fill-current" : ""}`} />
+                          </Button>
+                          <Button variant="ghost" size="icon" className="h-8 w-8">
+                            <Share2 className="h-3.5 w-3.5" />
+                          </Button>
                         </div>
+                      </div>
+                    </div>
+                  </Card>
+                ))}
 
-                        <div>
-                          <h3 className="text-lg font-semibold mb-2">Connect With Me</h3>
-                          <div className="flex flex-wrap gap-4">
-                            <Button variant="outline" size="sm" asChild className="gap-2">
+                <Button variant="outline" className="w-full bg-white text-black hover:bg-zinc-100 border-0">
+                  View all posts
+                </Button>
+              </TabsContent>
+
+              <TabsContent value="about" className="mt-6">
+                <Card className="border border-zinc-800 bg-black rounded-xl">
+                  <CardContent className="p-6">
+                    <div className="space-y-6">
+                      <div>
+                        <h3 className="text-lg font-semibold mb-4 text-white">About {userData.name}</h3>
+                        <p className="text-zinc-300 mb-4">
+                          I'm a passionate {userData.role.toLowerCase()} with over 5 years of experience creating
+                          beautiful, functional digital experiences. My journey in tech began when I built my first
+                          website at 15, and I've been hooked ever since.
+                        </p>
+                        <p className="text-zinc-300 mb-4">
+                          I specialize in modern technologies and techniques, with a focus on creating accessible,
+                          performant, and visually appealing work. When I'm not working, you can find me exploring
+                          photography, reading sci-fi novels, or hiking in the mountains.
+                        </p>
+                        <p className="text-zinc-300">
+                          Through this blog, I share my thoughts on technology, design trends, and occasional life
+                          reflections. I believe in the power of knowledge sharing and hope my content helps fellow
+                          professionals on their own journeys.
+                        </p>
+                      </div>
+
+                      <div>
+                        <h3 className="text-lg font-semibold mb-4 text-white">Connect With Me</h3>
+                        <div className="flex flex-wrap gap-3">
+                          {userData.social.twitter && (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              asChild
+                              className="gap-2 bg-white text-black hover:bg-zinc-100 border-0"
+                            >
                               <Link
-                                href={`https://twitter.com/${user.social.twitter}`}
+                                href={`https://twitter.com/${userData.social.twitter}`}
                                 target="_blank"
                                 rel="noopener noreferrer"
                               >
+                                <Twitter className="h-4 w-4 mr-1" />
                                 Twitter
                               </Link>
                             </Button>
-                            <Button variant="outline" size="sm" asChild className="gap-2">
+                          )}
+                          {userData.social.github && (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              asChild
+                              className="gap-2 bg-white text-black hover:bg-zinc-100 border-0"
+                            >
                               <Link
-                                href={`https://github.com/${user.social.github}`}
+                                href={`https://github.com/${userData.social.github}`}
                                 target="_blank"
                                 rel="noopener noreferrer"
                               >
+                                <Github className="h-4 w-4 mr-1" />
                                 GitHub
                               </Link>
                             </Button>
-                            <Button variant="outline" size="sm" asChild className="gap-2">
-                              <Link href={user.social.website} target="_blank" rel="noopener noreferrer">
+                          )}
+                          {userData.social.website && (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              asChild
+                              className="gap-2 bg-white text-black hover:bg-zinc-100 border-0"
+                            >
+                              <Link href={userData.social.website} target="_blank" rel="noopener noreferrer">
+                                <Globe className="h-4 w-4 mr-1" />
                                 Website
                               </Link>
                             </Button>
-                          </div>
+                          )}
                         </div>
                       </div>
-                    </CardContent>
-                  </Card>
-                </TabsContent>
-              </Tabs>
-            </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </TabsContent>
+            </Tabs>
           </div>
         </div>
       </main>

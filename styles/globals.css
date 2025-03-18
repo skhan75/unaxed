@@ -48,20 +48,33 @@ body {
     --sidebar-border: 220 13% 91%;
     --sidebar-ring: 217.2 91.2% 59.8%;
 
-    /* Reading mode theme variables */
-    --reading-background: 40 30% 96%;
-    --reading-foreground: 25 30% 10%;
-    --reading-card: 40 30% 98%;
-    --reading-card-foreground: 25 30% 10%;
-    --reading-primary: 25 30% 20%;
-    --reading-primary-foreground: 40 30% 98%;
-    --reading-secondary: 25 10% 90%;
-    --reading-secondary-foreground: 25 30% 20%;
-    --reading-muted: 25 10% 90%;
-    --reading-muted-foreground: 25 30% 40%;
-    --reading-accent: 25 10% 90%;
-    --reading-accent-foreground: 25 30% 20%;
-    --reading-border: 25 10% 80%;
+    /* Reading mode theme variables - Updated to be warmer and less bright */
+    --reading-background: 35 25% 93%;
+    --reading-foreground: 30 25% 15%;
+    --reading-card: 35 25% 95%;
+    --reading-card-foreground: 30 25% 15%;
+    --reading-primary: 30 25% 25%;
+    --reading-primary-foreground: 35 25% 95%;
+    --reading-secondary: 30 15% 85%;
+    --reading-secondary-foreground: 30 25% 25%;
+    --reading-muted: 30 15% 85%;
+    --reading-muted-foreground: 30 25% 45%;
+    --reading-accent: 30 15% 85%;
+    --reading-accent-foreground: 30 25% 25%;
+    --reading-border: 30 15% 75%;
+    --reading-input: 30 15% 75%;
+    --reading-ring: 30 25% 25%;
+
+    /* Ensure buttons and interactive elements have proper contrast */
+    --button-background: 30 25% 25%;
+    --button-foreground: 35 25% 95%;
+    --button-hover: 30 25% 20%;
+
+    /* Ensure tag colors work in reading mode */
+    --tag-background: 30 15% 85%;
+    --tag-foreground: 30 25% 25%;
+    --tag-border: 30 15% 75%;
+    --tag-hover: 30 15% 80%;
   }
   .dark {
     --background: 0 0% 3.9%;
@@ -98,22 +111,36 @@ body {
     --sidebar-ring: 217.2 91.2% 59.8%;
   }
   .reading {
-    --background: var(--reading-background);
-    --foreground: var(--reading-foreground);
-    --card: var(--reading-card);
-    --card-foreground: var(--reading-card-foreground);
-    --popover: var(--reading-card);
-    --popover-foreground: var(--reading-card-foreground);
-    --primary: var(--reading-primary);
-    --primary-foreground: var(--reading-primary-foreground);
-    --secondary: var(--reading-secondary);
-    --secondary-foreground: var(--reading-secondary-foreground);
-    --muted: var(--reading-muted);
-    --muted-foreground: var(--reading-muted-foreground);
-    --accent: var(--reading-accent);
-    --accent-foreground: var(--reading-accent-foreground);
-    --border: var(--reading-border);
-    --input: var(--reading-border);
+    /* Updated reading mode theme to be warmer and less bright with better contrast */
+    --background: 35 25% 93%;
+    --foreground: 30 25% 15%;
+    --card: 35 25% 95%;
+    --card-foreground: 30 25% 15%;
+    --popover: 35 25% 95%;
+    --popover-foreground: 30 25% 15%;
+    --primary: 30 25% 25%;
+    --primary-foreground: 35 25% 95%;
+    --secondary: 30 15% 85%;
+    --secondary-foreground: 30 25% 25%;
+    --muted: 30 15% 85%;
+    --muted-foreground: 30 25% 45%;
+    --accent: 30 15% 85%;
+    --accent-foreground: 30 25% 25%;
+    --border: 30 15% 75%;
+    --input: 30 15% 75%;
+    --ring: 30 25% 25%;
+
+    /* Ensure buttons and interactive elements have proper contrast */
+    --button-background: 30 25% 25%;
+    --button-foreground: 35 25% 95%;
+    --button-hover: 30 25% 20%;
+
+    /* Ensure tag colors work in reading mode */
+    --tag-background: 30 15% 85%;
+    --tag-foreground: 30 25% 25%;
+    --tag-border: 30 15% 75%;
+    --tag-hover: 30 15% 80%;
+
     font-family: Georgia, "Times New Roman", Times, serif;
     font-size: 1.05rem;
     line-height: 1.7;
@@ -127,5 +154,188 @@ body {
   body {
     @apply bg-background text-foreground;
   }
+}
+
+/* Add specific styles for reading mode to ensure visibility */
+.reading .post-reactions,
+.reading .comment-section {
+  @apply text-foreground;
+}
+
+.reading .badge,
+.reading .tag {
+  background-color: hsl(var(--tag-background));
+  color: hsl(var(--tag-foreground));
+  border-color: hsl(var(--tag-border));
+}
+
+.reading .badge:hover,
+.reading .tag:hover {
+  background-color: hsl(var(--tag-hover));
+}
+
+.reading .btn,
+.reading .button {
+  background-color: hsl(var(--button-background));
+  color: hsl(var(--button-foreground));
+}
+
+.reading .btn:hover,
+.reading .button:hover {
+  background-color: hsl(var(--button-hover));
+}
+
+.reading .muted {
+  @apply text-muted-foreground;
+}
+
+/* Add additional reading mode styles to ensure all elements are properly visible */
+.reading h1,
+.reading h2,
+.reading h3,
+.reading h4,
+.reading h5,
+.reading h6 {
+  color: hsl(var(--foreground));
+}
+
+.reading p,
+.reading li,
+.reading blockquote {
+  color: hsl(var(--foreground));
+}
+
+.reading .article-summary {
+  background-color: hsl(var(--card));
+  color: hsl(var(--card-foreground));
+  border-color: hsl(var(--border));
+  padding: 1rem;
+  margin-bottom: 1.5rem;
+  border-width: 1px;
+  border-style: solid;
+  border-radius: 0.5rem;
+}
+
+.reading .card {
+  background-color: hsl(var(--card));
+  color: hsl(var(--card-foreground));
+  border-color: hsl(var(--border));
+}
+
+.reading .badge {
+  background-color: hsl(var(--tag-background));
+  color: hsl(var(--tag-foreground));
+  border-color: hsl(var(--tag-border));
+}
+
+.reading .badge:hover {
+  background-color: hsl(var(--tag-hover));
+}
+
+.reading .text-muted-foreground {
+  color: hsl(var(--muted-foreground));
+}
+
+.reading .text-primary {
+  color: hsl(var(--primary));
+}
+
+.reading .border-primary\/20 {
+  border-color: hsl(var(--border));
+}
+
+.reading .bg-zinc-900\/90,
+.reading .bg-background\/80,
+.reading .bg-secondary\/10,
+.reading .bg-muted\/20,
+.reading .bg-zinc-100\/50,
+.reading .bg-zinc-100\/90,
+.reading .bg-zinc-100 {
+  background-color: hsl(var(--card));
+}
+
+/* Light mode specific styles for better contrast */
+.badge {
+  @apply font-medium;
+}
+
+/* Ensure light mode badges have proper contrast */
+:root:not(.dark):not(.reading) .badge {
+  @apply bg-zinc-200 text-zinc-800 border-zinc-300;
+}
+
+:root:not(.dark):not(.reading) .badge:hover {
+  @apply bg-zinc-300;
+}
+
+/* Ensure light mode card backgrounds have proper contrast */
+:root:not(.dark):not(.reading) .card {
+  @apply bg-white border-zinc-300;
+}
+
+/* Ensure light mode text has proper contrast */
+:root:not(.dark):not(.reading) .text-muted-foreground {
+  @apply text-zinc-600;
+}
+
+/* Add these styles to ensure proper text color in light mode for HTML content */
+:root:not(.dark):not(.reading) h1,
+:root:not(.dark):not(.reading) h2,
+:root:not(.dark):not(.reading) h3,
+:root:not(.dark):not(.reading) h4,
+:root:not(.dark):not(.reading) h5,
+:root:not(.dark):not(.reading) h6 {
+  color: hsl(var(--foreground));
+}
+
+:root:not(.dark):not(.reading) p,
+:root:not(.dark):not(.reading) li,
+:root:not(.dark):not(.reading) blockquote,
+:root:not(.dark):not(.reading) a:not(.btn):not(.button) {
+  color: hsl(var(--foreground));
+}
+
+/* Fix for HTML content rendered via dangerouslySetInnerHTML */
+.prose h1,
+.prose h2,
+.prose h3,
+.prose h4,
+.prose h5,
+.prose h6 {
+  color: hsl(var(--foreground)) !important;
+  margin-top: 1.5em;
+  margin-bottom: 0.5em;
+}
+
+.prose p,
+.prose li,
+.prose blockquote {
+  color: hsl(var(--foreground)) !important;
+}
+
+/* Ensure author info text is visible in all themes */
+.author-name,
+.author-bio {
+  color: hsl(var(--foreground));
+}
+
+/* Fix for any remaining white text on light backgrounds */
+:root:not(.dark):not(.reading) .text-foreground {
+  color: hsl(var(--foreground));
+}
+
+:root:not(.dark):not(.reading) .text-muted-foreground {
+  color: hsl(var(--muted-foreground));
+}
+
+/* Ensure author names are visible in light mode */
+:root:not(.dark):not(.reading) a.text-foreground,
+:root:not(.dark):not(.reading) .text-foreground a {
+  @apply text-zinc-800;
+}
+
+/* Ensure author bio is visible in light mode */
+:root:not(.dark):not(.reading) .text-foreground p {
+  @apply text-zinc-700;
 }
 

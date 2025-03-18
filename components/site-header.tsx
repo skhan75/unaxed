@@ -144,6 +144,13 @@ export function SiteHeader() {
                         <Link href="/auth/login">Sign In</Link>
                       </Button>
                     </div>
+                    <div className="border-t border-border my-4"></div>
+                    <Link
+                      href="/publications"
+                      className="flex items-center py-2 text-sm font-medium transition-colors hover:text-primary text-muted-foreground"
+                    >
+                      Publications
+                    </Link>
                   </>
                 )}
 
@@ -162,6 +169,12 @@ export function SiteHeader() {
                       className="flex items-center py-2 text-sm font-medium transition-colors hover:text-primary text-muted-foreground"
                     >
                       Dashboard
+                    </Link>
+                    <Link
+                      href="/publications"
+                      className="flex items-center py-2 text-sm font-medium transition-colors hover:text-primary text-muted-foreground"
+                    >
+                      Publications
                     </Link>
                     <Link
                       href={`/profile/${currentUser.username}`}

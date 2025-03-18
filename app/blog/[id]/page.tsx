@@ -1,154 +1,37 @@
 "use client"
 
 import Link from "next/link"
-import { ArrowLeft, Calendar, Clock, Eye, User } from "lucide-react"
+import { Eye, User, BookmarkIcon, Sparkles } from "lucide-react"
 import { useState, useRef, useEffect } from "react"
 
 import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
 import { SiteHeader } from "@/components/site-header"
 import { SiteFooter } from "@/components/site-footer"
-import { Badge } from "@/components/ui/badge"
 import { ArticleSummary } from "@/components/ai/article-summary"
 import { ContentRecommendations } from "@/components/ai/content-recommendations"
-import { PostReactions } from "@/components/post-reactions"
 import { CommentSection } from "@/components/comment-section"
 import { useAuth } from "@/components/site-header"
-import { Card } from "@/components/ui/card"
+import { PostActions } from "@/components/post-actions"
+import { SubscribeForm } from "@/components/newsletter/subscribe-form"
+import { ProfileAvatar } from "@/components/profile-avatar"
+import { FollowButton } from "@/components/follow-button"
+import { POSTS, getPostById } from "@/lib/data/mock-data"
 
-// Update the posts data structure to include images
-// Find the posts array and add image properties
-
-// Update the posts array to use real images
-const posts = [
-  {
-    id: 1,
-    title: "The Future of Web Development",
-    content: `
-  <p>The landscape of web development is constantly evolving, with new technologies and methodologies emerging at a rapid pace. As we look to the future, several key trends are shaping how we build and interact with the web.</p>
-  
-  <h2>AI-Driven Development</h2>
-  <p>Artificial intelligence is revolutionizing how we approach web development. From code generation to automated testing, AI tools are enhancing developer productivity and enabling more sophisticated applications.</p>
-  
-  <h2>WebAssembly</h2>
-  <p>WebAssembly (Wasm) continues to gain traction, allowing high-performance applications to run in the browser. This technology bridges the gap between web and native applications, opening new possibilities for web-based software.</p>
-  
-  <h2>Edge Computing</h2>
-  <p>The shift toward edge computing is changing how we architect web applications. By moving computation closer to the user, we can achieve lower latency and better performance, especially for global applications.</p>
-  
-  <h2>Conclusion</h2>
-  <p>The future of web development is bright, with technologies that enable more powerful, accessible, and performant applications. By staying informed about these trends, developers can position themselves at the forefront of innovation.</p>
-`,
-    date: "Mar 15, 2025",
-    readTime: "5 min read",
-    author: "Alex Johnson",
-    category: "Technology",
-    views: 1243,
-    likes: 87,
-    standingOvations: 12,
-    comments: 23,
-    tags: ["webdev", "future", "ai", "wasm", "edge"],
-    readingLevel: "Intermediate",
-    lastUpdated: "Mar 16, 2025",
-    relatedPosts: [2, 6, 7],
-    image: "https://images.unsplash.com/photo-1571171637578-41bc2dd41cd2?q=80&w=1200&auto=format&fit=crop",
-  },
-  {
-    id: 2,
-    title: "Minimalism in UI Design",
-    content: `
-  <p>Minimalism has become a dominant force in UI design, emphasizing simplicity, clarity, and functionality. This approach strips away unnecessary elements to focus on what truly matters to users.</p>
-  
-  <h2>The Power of White Space</h2>
-  <p>White space, or negative space, is a fundamental element of minimalist design. It gives content room to breathe, improves readability, and creates a sense of elegance and sophistication.</p>
-  
-  <h2>Typography as a Design Element</h2>
-  <p>In minimalist interfaces, typography often takes center stage. Careful selection of fonts, sizes, and spacing can communicate hierarchy and guide users through an interface without relying on decorative elements.</p>
-  
-  <h2>Color with Purpose</h2>
-  <p>Minimalist color palettes are typically restrained, using color strategically to highlight important elements or convey meaning. This focused approach to color enhances usability and aesthetic appeal.</p>
-  
-  <h2>Conclusion</h2>
-  <p>Embracing minimalism in UI design leads to interfaces that are not only visually appealing but also more functional and user-friendly. By focusing on what's essential, designers can create experiences that truly resonate with users.</p>
-`,
-    date: "Mar 10, 2025",
-    readTime: "4 min read",
-    author: "Sam Chen",
-    category: "Design",
-    views: 982,
-    likes: 64,
-    standingOvations: 8,
-    comments: 18,
-    tags: ["design", "minimalism", "ui", "ux", "typography"],
-    readingLevel: "Beginner",
-    lastUpdated: "Mar 12, 2025",
-    relatedPosts: [5, 9, 11],
-    image: "https://images.unsplash.com/photo-1545235617-9465d2a55698?q=80&w=1200&auto=format&fit=crop",
-  },
-  {
-    id: 3,
-    title: "The Art of Digital Photography",
-    content: `
-  <p>Digital photography has democratized image creation, allowing anyone with a camera or smartphone to capture moments. However, mastering this art form requires understanding both technical aspects and creative principles.</p>
-  
-  <h2>Understanding Light</h2>
-  <p>Light is the essence of photography. Learning to observe and work with different lighting conditions—natural, artificial, harsh, or diffused—is fundamental to creating compelling images.</p>
-  
-  <h2>Composition Techniques</h2>
-  <p>Composition is how elements are arranged within a frame. Techniques like the rule of thirds, leading lines, and framing can transform an ordinary scene into a powerful photograph.</p>
-  
-  <h2>Post-  and framing can transform an ordinary scene into a powerful photograph.</p>
-  
-  <h2>Post-Processing</h2>
-  <p>Digital editing is an integral part of modern photography. Thoughtful post-processing can enhance images, correct issues, and express your creative vision without appearing artificial or overdone.</p>
-  
-  <h2>Conclusion</h2>
-  <p>Digital photography is both a technical skill and an art form. By developing your understanding of light, composition, and post-processing, you can create images that not only document moments but also convey emotion and tell stories.</p>
-`,
-    date: "Mar 5, 2025",
-    readTime: "6 min read",
-    author: "Jamie Smith",
-    category: "Photography",
-    views: 756,
-    likes: 52,
-    standingOvations: 5,
-    comments: 14,
-    tags: ["photography", "digital", "composition", "lighting", "editing"],
-    readingLevel: "Intermediate",
-    lastUpdated: "Mar 8, 2025",
-    relatedPosts: [4, 8, 10],
-    image: "https://images.unsplash.com/photo-1516035069371-29a1b244cc32?q=80&w=1200&auto=format&fit=crop",
-  },
-]
-
-// Add more posts to match the IDs from the homepage
-for (let i = 4; i <= 11; i++) {
-  posts.push({
-    id: i,
-    title: `Sample Blog Post ${i}`,
-    content: `<p>This is sample content for blog post ${i}.</p>`,
-    date: "Mar 1, 2025",
-    readTime: "3 min read",
-    author: "Alex Johnson",
-    category: "Technology",
-    views: 500,
-    likes: 30,
-    standingOvations: 2,
-    comments: 5,
-    tags: ["sample", "test", "webdev"],
-    readingLevel: "Beginner",
-    lastUpdated: "Mar 2, 2025",
-    relatedPosts: [1, 2, 3],
-    image: "https://images.unsplash.com/photo-1498050108023-c5249f4df085?q=80&w=1200&auto=format&fit=crop",
-  })
-}
-
-// Keep the authentication check for the "Join the conversation" section
 export default function BlogPost({ params }: { params: { id: string } }) {
-  const post = posts.find((post) => post.id === Number.parseInt(params.id)) || posts[0]
-  const relatedPostsData = post.relatedPosts.map((id) => posts.find((p) => p.id === id)).filter(Boolean)
+  // Get the post from our centralized mock data
+  const post = getPostById(Number(params.id)) || POSTS[0]
+
+  // Debug the avatar URL
+  console.log("Author data:", post.author)
+  console.log("Author avatar URL:", post.author.avatar)
+
+  // Get related posts - use the first 3 posts that aren't the current post
+  const relatedPostsData = POSTS.filter((p) => p.id !== post.id).slice(0, 3)
+
   const { currentUser } = useAuth()
   const [showAuthPrompt, setShowAuthPrompt] = useState(!currentUser)
+  const [isBookmarked, setIsBookmarked] = useState(false)
   const commentSectionRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -161,154 +44,220 @@ export default function BlogPost({ params }: { params: { id: string } }) {
     }
   }
 
+  const handleBookmarkToggle = () => {
+    setIsBookmarked(!isBookmarked)
+  }
+
+  // Convert tags array to string array if it's not already
+  const postTags = Array.isArray(post.tags) ? post.tags : []
+
   return (
-    <div className="flex min-h-screen flex-col bg-background">
+    <div className="flex min-h-screen flex-col bg-background relative">
+      {/* Full-width background texture */}
+      <div className="absolute inset-0 grid grid-cols-[repeat(40,1fr)] grid-rows-[repeat(40,1fr)] gap-px opacity-[0.02] pointer-events-none z-0">
+        {Array.from({ length: 1600 }).map((_, i) => (
+          <div key={i} className="bg-primary/40"></div>
+        ))}
+      </div>
+
+      {/* Scanline effect - full width */}
+      <div className="absolute inset-0 bg-[linear-gradient(to_bottom,transparent_50%,rgba(0,0,0,0.02)_50%)] bg-[length:100%_4px] pointer-events-none z-0"></div>
+
       <SiteHeader />
-      <main className="flex-1 container max-w-5xl py-12 relative">
-        {/* Grid background for retro-futuristic feel */}
-        <div className="absolute inset-0 grid grid-cols-[repeat(40,1fr)] grid-rows-[repeat(40,1fr)] gap-px opacity-[0.02] pointer-events-none z-0">
-          {Array.from({ length: 1600 }).map((_, i) => (
-            <div key={i} className="bg-primary/40"></div>
-          ))}
-        </div>
+      <main className="flex-1 container py-12 relative z-10">
+        <div className="relative z-10 grid grid-cols-1 lg:grid-cols-3 gap-8">
+          {/* Main content area - takes up 2/3 of the width on large screens */}
+          <div className="lg:col-span-2">
+            <article className="prose prose-invert max-w-none">
+              <div className="space-y-4 mb-8">
+                {/* Wider cover image that spans the full content width */}
+                {post.image && (
+                  <div className="rounded-lg overflow-hidden mb-6 w-full aspect-[21/9]">
+                    <img
+                      src={post.image || "/placeholder.svg"}
+                      alt={post.title}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                )}
 
-        {/* Scanline effect */}
-        <div className="absolute inset-0 bg-[linear-gradient(to_bottom,transparent_50%,rgba(0,0,0,0.02)_50%)] bg-[length:100%_4px] pointer-events-none z-0"></div>
+                {/* Modified title with theme-appropriate colors instead of gradient */}
+                <h1 className="text-3xl font-bold leading-tight tracking-tighter md:text-4xl lg:text-5xl text-zinc-900 dark:text-white">
+                  {post.title}
+                </h1>
 
-        <div className="relative z-10">
-          <Button variant="ghost" size="sm" asChild className="mb-6 group">
-            <Link href="/">
-              <ArrowLeft className="mr-2 h-4 w-4 group-hover:-translate-x-1 transition-transform" />
-              Back to Home
-            </Link>
-          </Button>
+                {/* Author info with vertical metadata and bordered follow button */}
+                <div className="flex items-start gap-3 py-3 mb-2">
+                  <Link href={`/profile/${post.author.username}`} className="flex-shrink-0">
+                    <ProfileAvatar
+                      src={post.author.avatar}
+                      alt={post.author.name}
+                      size="md"
+                      className="border border-zinc-200 dark:border-zinc-700"
+                    />
+                  </Link>
 
-          {/* Now add the hero image to the blog post page
-// Find the article section and add the image before the title */}
+                  <div className="flex flex-col">
+                    <div className="flex items-center gap-2">
+                      <Link
+                        href={`/profile/${post.author.username}`}
+                        className="font-medium text-zinc-800 dark:text-zinc-200 hover:text-primary transition-colors"
+                      >
+                        {post.author.name}
+                      </Link>
 
-          <article className="prose prose-invert max-w-none">
-            <div className="space-y-4 mb-8">
-              <div className="flex flex-wrap gap-2">
-                <Badge className="border border-primary/20 bg-background/80 backdrop-blur-sm">{post.category}</Badge>
-                <Badge variant="outline" className="text-xs border-primary/20 bg-background/80 backdrop-blur-sm">
-                  {post.readingLevel}
-                </Badge>
+                      <FollowButton
+                        userId={post.author.id}
+                        variant="compact"
+                        className="border border-zinc-300 dark:border-zinc-700 rounded-full px-3 py-0.5 text-xs"
+                      />
+                    </div>
+
+                    <div className="text-sm text-zinc-500 dark:text-zinc-400 mt-1">
+                      <span>{post.readTime ? `${post.readTime} min read` : "5 min read"}</span>
+                      <span className="mx-1">·</span>
+                      <span>{post.date}</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex flex-wrap items-center gap-x-6 gap-y-3 text-sm text-muted-foreground mt-2">
+                  <div className="flex items-center gap-1">
+                    <Eye className="h-4 w-4" />
+                    <span>{post.views} views</span>
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className={`h-8 px-2 flex items-center gap-1 ${isBookmarked ? "text-primary" : ""}`}
+                    onClick={handleBookmarkToggle}
+                  >
+                    <BookmarkIcon className={`h-4 w-4 ${isBookmarked ? "fill-current" : ""}`} />
+                    <span>{isBookmarked ? "Saved" : "Save"}</span>
+                  </Button>
+                </div>
               </div>
 
-              {post.image && (
-                <div className="rounded-lg overflow-hidden mb-6 mt-4">
-                  <img src={post.image || "/placeholder.svg"} alt={post.title} className="w-full h-auto object-cover" />
+              <div className="relative">
+                <Separator className="my-8" />
+                {/* Decorative element */}
+                <div className="absolute left-0 top-0 h-8 w-1 bg-gradient-to-b from-pink-300 via-purple-300 to-indigo-300 rounded-full transform -translate-y-4"></div>
+              </div>
+
+              <div
+                dangerouslySetInnerHTML={{ __html: post.content || "" }}
+                className="space-y-6 text-foreground prose prose-headings:text-foreground prose-p:text-foreground prose-strong:text-foreground prose-em:text-foreground relative reading:text-foreground reading:leading-relaxed"
+              />
+
+              <div className="relative">
+                <Separator className="my-8" />
+                {/* Decorative element */}
+                <div className="absolute right-0 bottom-0 h-8 w-1 bg-gradient-to-b from-indigo-300 via-purple-300 to-pink-300 rounded-full transform translate-y-4"></div>
+              </div>
+
+              {/* Author info and subscribe section */}
+              <div className="mt-8 p-6 border border-zinc-300 rounded-lg bg-zinc-100/50 dark:border-primary/20 dark:bg-background/50 dark:backdrop-blur-sm reading:border-[hsl(var(--border))] reading:bg-[hsl(var(--card))]">
+                <div className="flex flex-col md:flex-row gap-6 items-start">
+                  <Link href={`/profile/${post.author.username}`} className="flex-shrink-0">
+                    <ProfileAvatar
+                      src={post.author.avatar}
+                      alt={post.author.name}
+                      size="lg"
+                      className="border-2 border-zinc-300 dark:border-primary/30 reading:border-[hsl(var(--border))]"
+                    />
+                  </Link>
+                  <div className="flex-1 space-y-4">
+                    <div>
+                      <Link
+                        href={`/profile/${post.author.username}`}
+                        className="text-lg font-bold text-zinc-800 dark:text-foreground hover:text-primary transition-colors"
+                      >
+                        {post.author.name}
+                      </Link>
+                      <p className="text-sm text-zinc-700 dark:text-foreground mt-1">{post.author.bio}</p>
+                    </div>
+
+                    <div className="flex flex-wrap gap-3">
+                      <Button asChild size="sm" variant="outline" className="gap-2">
+                        <Link href={`/profile/${post.author.username}`}>
+                          <User className="h-4 w-4" />
+                          View Profile
+                        </Link>
+                      </Button>
+                      <SubscribeForm
+                        authorId={post.author.id.toString()}
+                        authorName={post.author.name}
+                        compact={true}
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Post Actions */}
+              <div className="flex flex-wrap justify-between items-center mt-8">
+                <PostActions
+                  postId={post.id.toString()}
+                  initialLikes={post.likes}
+                  initialComments={post.comments}
+                  initialBookmarked={isBookmarked}
+                  onCommentClick={scrollToComments}
+                />
+                <div className="text-sm text-muted-foreground font-mono">
+                  <span className="text-primary/70">Last updated:</span> {post.date}
+                </div>
+              </div>
+
+              {/* Comments Section */}
+              <div ref={commentSectionRef}>
+                <CommentSection postId={post.id} />
+              </div>
+
+              {/* Auth prompt for non-logged in users */}
+              {showAuthPrompt && (
+                <div className="mt-8 p-6 border border-zinc-300 rounded-lg bg-zinc-100/90 dark:border-primary/30 dark:bg-zinc-900/90 dark:backdrop-blur-sm reading:border-[hsl(var(--border))] reading:bg-[hsl(var(--card))] space-y-4">
+                  <h3 className="text-xl font-bold">Join the conversation</h3>
+                  <p className="text-muted-foreground">
+                    Sign in to like, comment, and interact with this post and other content on Unaxed.
+                  </p>
+                  <div className="flex gap-4">
+                    <Button asChild>
+                      <Link href="/auth/login">Sign In</Link>
+                    </Button>
+                    <Button variant="outline" asChild>
+                      <Link href="/auth/signup">Create Account</Link>
+                    </Button>
+                  </div>
                 </div>
               )}
+            </article>
+          </div>
 
-              <div className="inline-block">
-                <h1 className="text-3xl font-bold leading-tight tracking-tighter md:text-4xl lg:text-5xl bg-gradient-to-r from-pink-300 via-purple-300 to-indigo-300 bg-clip-text text-transparent relative">
-                  {post.title}
-                  <span className="absolute -inset-1 rounded-lg bg-gradient-to-r from-pink-300/10 via-purple-300/10 to-indigo-300/10 blur-lg -z-10"></span>
-                </h1>
-              </div>
-
-              <div className="flex flex-wrap items-center gap-x-6 gap-y-3 text-sm text-muted-foreground">
-                <div className="flex items-center gap-1">
-                  <User className="h-4 w-4" />
-                  <span>{post.author}</span>
-                </div>
-                <div className="flex items-center gap-1">
-                  <Calendar className="h-4 w-4" />
-                  <span>Published: {post.date}</span>
-                </div>
-                <div className="flex items-center gap-1">
-                  <Clock className="h-4 w-4" />
-                  <span>{post.readTime}</span>
-                </div>
-                <div className="flex items-center gap-1">
-                  <Eye className="h-4 w-4" />
-                  <span>{post.views} views</span>
-                </div>
-              </div>
-
-              <div className="flex flex-wrap gap-2 mt-4">
-                {post.tags.map((tag, index) => (
-                  <Link href={`/tags/${tag}`} key={index}>
-                    <Badge
-                      variant="secondary"
-                      className="text-xs hover:bg-primary/10 transition-colors border border-primary/20 bg-background/80 backdrop-blur-sm"
-                    >
-                      #{tag}
-                    </Badge>
-                  </Link>
-                ))}
-              </div>
-            </div>
-
-            {/* AI-Generated Summary */}
-            <Card className="p-4 mb-6 border border-primary/20 bg-zinc-900/90">
-              <ArticleSummary articleId={post.id} title={post.title} content={post.content} />
-            </Card>
-
-            <div className="relative">
-              <Separator className="my-8" />
-
-              {/* Decorative element */}
-              <div className="absolute left-0 top-0 h-8 w-1 bg-gradient-to-b from-pink-300 via-purple-300 to-indigo-300 rounded-full transform -translate-y-4"></div>
-            </div>
-
-            <div
-              dangerouslySetInnerHTML={{ __html: post.content }}
-              className="space-y-6 text-muted-foreground relative reading:text-foreground reading:leading-relaxed"
-            />
-
-            <div className="relative">
-              <Separator className="my-8" />
-
-              {/* Decorative element */}
-              <div className="absolute right-0 bottom-0 h-8 w-1 bg-gradient-to-b from-indigo-300 via-purple-300 to-pink-300 rounded-full transform translate-y-4"></div>
-            </div>
-
-            {/* Post Reactions */}
-            <div className="flex flex-wrap justify-between items-center">
-              <PostReactions
-                postId={post.id}
-                initialLikes={post.likes}
-                initialStandingOvations={post.standingOvations}
-                initialComments={post.comments}
-                size="md"
-                showLabels={true}
-                showShare={true}
-                onCommentClick={scrollToComments}
-              />
-              <div className="text-sm text-muted-foreground font-mono">
-                <span className="text-primary/70">Last updated:</span> {post.lastUpdated}
-              </div>
-            </div>
-
-            {/* Comments Section */}
-            <div ref={commentSectionRef}>
-              <CommentSection postId={post.id} />
-            </div>
-
-            {/* Auth prompt for non-logged in users */}
-            {showAuthPrompt && (
-              <div className="mt-8 p-6 border border-primary/30 rounded-lg bg-zinc-900/90 backdrop-blur-sm space-y-4">
-                <h3 className="text-xl font-bold">Join the conversation</h3>
-                <p className="text-muted-foreground">
-                  Sign in to like, comment, and interact with this post and other content on Unaxed.
-                </p>
-                <div className="flex gap-4">
-                  <Button asChild>
-                    <Link href="/auth/login">Sign In</Link>
-                  </Button>
-                  <Button variant="outline" asChild>
-                    <Link href="/auth/signup">Create Account</Link>
+          {/* Right sidebar - takes up 1/3 of the width on large screens */}
+          <div className="lg:col-span-1">
+            <div className="sticky top-24">
+              {/* Redesigned AI Summary Card with black/gray theme instead of purple */}
+              <div className="rounded-xl overflow-hidden border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900 shadow-sm">
+                <div className="p-4 bg-zinc-100 dark:bg-zinc-800 border-b border-zinc-200 dark:border-zinc-700 flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Sparkles className="h-5 w-5 text-zinc-600 dark:text-zinc-300" />
+                    <h3 className="font-medium text-zinc-800 dark:text-zinc-100">AI-Generated Summary</h3>
+                  </div>
+                  <Button variant="ghost" size="sm" className="h-8 w-8 p-0 rounded-full">
+                    <Sparkles className="h-4 w-4 text-zinc-600 dark:text-zinc-300" />
+                    <span className="sr-only">Regenerate</span>
                   </Button>
                 </div>
+                <div className="p-5 text-sm text-zinc-700 dark:text-zinc-300 leading-relaxed">
+                  <ArticleSummary articleId={post.id} title={post.title} content={post.content || ""} />
+                </div>
               </div>
-            )}
-          </article>
 
-          {/* AI-powered Content Recommendations */}
-          <div className="mt-16">
-            <ContentRecommendations currentPostId={post.id} />
+              {/* AI-powered Content Recommendations */}
+              <div className="mt-8">
+                <ContentRecommendations currentPostId={post.id} />
+              </div>
+            </div>
           </div>
         </div>
       </main>
